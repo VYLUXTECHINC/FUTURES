@@ -135,7 +135,7 @@ export default function ForgotPasswordScreen() {
     try {
       await updatePassword(password)
       showToast('Password updated successfully!', 'success')
-      router.replace('/mt5')
+      router.replace('/broker-connect')
     } catch (e: any) {
       showToast(e.message || 'Failed to update password', 'error')
     } finally {

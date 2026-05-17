@@ -59,9 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut()
     const storage = Platform.OS === 'web' ? localStorage : SecureStore
-    storage === SecureStore
-      ? SecureStore.deleteItemAsync('futures_token')
-      : localStorage.removeItem('futures_token')
+    try {
+      if (storage === SecureStore) {
+        await SecureStore.deleteItemAsync('futures_token')
+      } else {
+        localStorage.removeItem('futures_token')
+      }
+    } catch {
+      // Token may not exist — ignore
+    }
   }
 
   const verifyOtp = async (email: string, token: string) => {

@@ -72,7 +72,7 @@ export default function SupportScreen() {
             numberOfLines={4}
             style={[styles.input, styles.textArea, { backgroundColor: colors.inputBg, color: colors.text, borderColor: colors.border }]}
           />
-          <TouchableOpacity style={[styles.uploadBtn, { borderColor: colors.border }]}>
+          <TouchableOpacity style={[styles.uploadBtn, { borderColor: colors.border }]} onPress={() => showToast('Image upload coming soon', 'info')}>
             <ThemedText muted style={{ textAlign: 'center' }}>
               {fileName || 'Upload Image'}
             </ThemedText>

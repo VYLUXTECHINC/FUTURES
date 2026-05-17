@@ -25,6 +25,7 @@ type DashboardState = {
   recentTrades: any[]
   health: 'green' | 'yellow' | 'red'
   cooldown: boolean
+  maxDailyTrades: number
 }
 
 const healthTooltips: Record<string, string> = {
@@ -38,7 +39,7 @@ export default function DashboardScreen() {
     balance: 0, equity: 0, margin: 0, dailyPnl: 0,
     botActive: false, mt5Connected: false, riskPercent: 5,
     mode: 'long', trades: [], recentTrades: [],
-    health: 'green', cooldown: false,
+    health: 'green', cooldown: false, maxDailyTrades: 5,
   })
   const [mode, setMode] = useState<'long' | 'short'>('long')
   const [tradeCount, setTradeCount] = useState(1)
@@ -78,10 +79,11 @@ export default function DashboardScreen() {
 
   const loadDashboard = useCallback(async () => {
     try {
-      const [status, dashboard, creds] = await Promise.all([
-        api.get<{ running: boolean; mt5_connected: boolean; risk_percent: number }>('/status'),
-        api.get<{ balance: number; equity: number; daily_pnl: number; open_trades: any[]; recent_trades: any[] }>('/dashboard'),
+      const [status, dashboard, creds, settings] = await Promise.all([
+        api.get<{ running: boolean; mt5_connected: boolean; risk_percent: number; daily_trades: number; cooldown_active: boolean }>('/status'),
+        api.get<{ balance: number; equity: number; margin: number; daily_pnl: number; open_trades: any[]; recent_trades: any[] }>('/dashboard'),
         api.get<{ login: string | null; server: string | null }>('/mt5/credentials'),
+        api.get<{ max_daily_trades?: number }>('/settings'),
       ])
       const server = creds.server || ''
       const parts = server.split('-')
@@ -94,6 +96,7 @@ export default function DashboardScreen() {
         ...prev,
         balance: dashboard.balance,
         equity: dashboard.equity,
+        margin: dashboard.margin || 0,
         dailyPnl: dashboard.daily_pnl,
         botActive: status.running,
         mt5Connected: status.mt5_connected,
@@ -101,6 +104,8 @@ export default function DashboardScreen() {
         trades: dashboard.open_trades,
         recentTrades: dashboard.recent_trades,
         health: status.mt5_connected ? 'green' : 'red',
+        cooldown: status.cooldown_active || false,
+        maxDailyTrades: settings.max_daily_trades || prev.maxDailyTrades,
       }))
     } catch { /* offline */ }
   }, [])
@@ -138,7 +143,7 @@ export default function DashboardScreen() {
 
   async function handleStartBot() {
     try {
-      await api.post('/user/start', { mode, tradeCount, riskPercent })
+      await api.post('/user/start', { mode, trade_count: tradeCount, risk_percent: riskPercent })
       setDash(prev => ({ ...prev, botActive: true }))
       showToast('Bot started', 'success')
     } catch (e: any) {
@@ -164,7 +169,7 @@ export default function DashboardScreen() {
   )
 
   const dailyUsed = dash.trades.length
-  const dailyLimit = 5
+  const dailyLimit = dash.maxDailyTrades || 5
   const pct = Math.min(100, (dailyUsed / dailyLimit) * 100)
 
   return (

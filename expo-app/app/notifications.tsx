@@ -10,8 +10,15 @@ import { useAuth } from '../contexts/AuthContext'
 import { api } from '../utils/api'
 import { supabase } from '../utils/supabase'
 import * as Notifications from 'expo-notifications'
-import * as Device from 'expo-device'
 import { FontSize, Spacing, BorderRadius } from '../constants/theme'
+
+declare global {
+  interface Window {
+    Notification?: {
+      requestPermission: () => Promise<string>
+    }
+  }
+}
 
 const PREF_ITEMS = [
   { key: 'trade_execution', label: 'Trade Execution', desc: 'Alert when a new trade is placed' },
@@ -41,8 +48,9 @@ export default function NotificationsScreen() {
 
   async function loadSettings() {
     try {
-      const data = await api.get<{ notifications: Record<string, boolean> }>('/settings')
-      if (data.notifications) setPrefs(prev => ({ ...prev, ...data.notifications }))
+      const data = await api.get<Record<string, unknown>>('/settings')
+      const notifications = data.notifications as Record<string, boolean> | undefined
+      if (notifications) setPrefs(prev => ({ ...prev, ...notifications }))
     } catch {}
   }
 

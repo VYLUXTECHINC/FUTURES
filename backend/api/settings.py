@@ -37,25 +37,38 @@ class SettingsUpdate(BaseModel):
 async def get_settings(request: Request) -> dict:
     client = get_client()
     if not client:
-        return {"error": "Supabase not configured"}
+        return _default_settings()
     user_id = request.headers.get("x-user-id", "default")
     try:
         res = client.table("profiles").select("*").eq("id", user_id).maybe_single().execute()
         if res.data:
-            profile = res.data
-            # Also fetch user_settings for max_daily_trades
+            profile = res.data if isinstance(res.data, dict) else {}
+            max_daily = 5
             try:
                 settings_res = client.table("user_settings").select("max_daily_trades").eq("user_id", user_id).maybe_single().execute()
                 if settings_res.data:
-                    profile["max_daily_trades"] = settings_res.data.get("max_daily_trades", 5)
-                else:
-                    profile["max_daily_trades"] = 5
+                    max_daily = settings_res.data.get("max_daily_trades", 5)
             except Exception:
-                profile["max_daily_trades"] = 5
-            return profile
+                pass
+            return {
+                "risk_percent": profile.get("risk_percent", 5.0),
+                "be_policy": profile.get("be_policy", "auto"),
+                "dry_run": profile.get("dry_run", False),
+                "auto_compounding": profile.get("auto_compounding", False),
+                "display_name": profile.get("display_name", "Trader"),
+                "max_daily_trades": max_daily,
+                "notifications": profile.get("notifications", {
+                    "trade_execution": True, "trade_closed": True, "daily_summary": True,
+                    "loss_cooldown": True, "maintenance": True, "package_expiry": True, "email_trade": False,
+                }),
+            }
     except Exception as e:
         logger.warning("Failed to fetch settings: %s", e)
 
+    return _default_settings()
+
+
+def _default_settings() -> dict:
     risk = _bot_state_ref.get("risk_percent") if _bot_state_ref else 5.0
     return {
         "risk_percent": risk or 5.0,

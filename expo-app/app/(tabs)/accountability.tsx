@@ -66,19 +66,28 @@ export default function AccountabilityScreen() {
     loadTrades()
   }, [loadTrades])
 
-  const closed = trades.filter(t => t.status === 'CLOSED')
+  const filteredTrades = trades.filter(t => {
+    if (range === 'all') return true
+    const days = parseInt(range, 10)
+    const tradeDate = new Date(t.opened_at)
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() - days)
+    return tradeDate >= cutoff
+  })
+
+  const closed = filteredTrades.filter(t => t.status === 'CLOSED')
   const won = closed.filter(t => (t.pnl ?? 0) > 0)
   const totalPnl = closed.reduce((s, t) => s + (t.pnl ?? 0), 0)
   const winRate = closed.length > 0 ? Math.round((won.length / closed.length) * 100) : 0
 
   function handleExport(format: 'csv' | 'pdf') {
-    if (trades.length === 0) {
+    if (filteredTrades.length === 0) {
       showToast('No trades to export', 'error')
       return
     }
     if (format === 'csv') {
       const header = 'Pair,Type,Lots,Entry,Exit,P&L,Time\n'
-      const rows = trades.map(t =>
+      const rows = filteredTrades.map(t =>
         `${t.pair},${t.direction},${t.lots},${t.entry_price},${t.close_price ?? ''},${t.pnl ?? ''},${t.opened_at}`
       ).join('\n')
       const blob = new Blob([header + rows], { type: 'text/csv' })
@@ -88,8 +97,10 @@ export default function AccountabilityScreen() {
       a.download = `trades_${range}d.csv`
       a.click()
       URL.revokeObjectURL(url)
+      showToast('CSV exported', 'success')
+    } else {
+      showToast('PDF export coming soon', 'info')
     }
-    showToast(`${format.toUpperCase()} export started`, 'success')
   }
 
   return (

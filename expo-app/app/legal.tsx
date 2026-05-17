@@ -145,7 +145,7 @@ export default function LegalScreen() {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
         let appVer = ''
         try { appVer = Application.nativeApplicationVersion || '' } catch {}
-        const fingerprint = `${Platform.OS} | ${Platform.OS === 'web' ? screen.width : ''}x${Platform.OS === 'web' ? screen.height : ''} | ${tz} | v${appVer}`.trim()
+        const fingerprint = `${Platform.OS} | ${Platform.OS === 'web' && typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : ''} | ${tz} | v${appVer}`.trim()
         await supabase.from('legal_acceptances').insert({
           user_id: session.user.id,
           terms_version: '2.0',

@@ -197,7 +197,10 @@ export default function SignScreen() {
               </TouchableOpacity>
               <View style={styles.formFooter}>
                 <ThemedText muted style={styles.footerText}>
-                  Don't have an account?
+                  Don't have an account?{' '}
+                  <ThemedText style={{ color: colors.primary, fontWeight: '600' }} onPress={() => setTab('signup')}>
+                    Sign Up
+                  </ThemedText>
                 </ThemedText>
               </View>
             </View>
@@ -278,6 +281,14 @@ export default function SignScreen() {
                 <ThemedText style={styles.googleIcon}>G</ThemedText>
                 <ThemedText style={styles.socialBtnText}>Google</ThemedText>
               </TouchableOpacity>
+              <View style={styles.formFooter}>
+                <ThemedText muted style={styles.footerText}>
+                  Already have an account?{' '}
+                  <ThemedText style={{ color: colors.primary, fontWeight: '600' }} onPress={() => setTab('login')}>
+                    Log In
+                  </ThemedText>
+                </ThemedText>
+              </View>
             </View>
           )}
         </ThemedCard>

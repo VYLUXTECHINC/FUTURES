@@ -258,22 +258,14 @@ export default function SettingsScreen() {
 
           <View style={styles.settingRow}>
             <ThemedText style={styles.settingTitle}>Max daily trades</ThemedText>
-            <ThemedText style={{ fontWeight: '600' }}>{maxDailyTrades}</ThemedText>
-          </View>
-          <View style={styles.sliderContainer}>
-            <View style={[styles.sliderTrack, { backgroundColor: colors.cardBorder }]}>
-              <View style={[styles.sliderFill, { backgroundColor: colors.primary, width: `${((maxDailyTrades - 1) / 24) * 100}%` }]} />
-            </View>
-            <View style={styles.sliderLabels}>
-              {Array.from({ length: 25 }, (_, i) => i + 1).map(n => (
-                <TouchableOpacity key={n} onPress={() => setMaxDailyTrades(n)} hitSlop={6}>
-                  <ThemedText style={{
-                    fontSize: FontSize.xs,
-                    fontWeight: n === maxDailyTrades ? '700' : '400',
-                    color: n === maxDailyTrades ? colors.primary : colors.textMuted,
-                  }}>{n}</ThemedText>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.stepper}>
+              <TouchableOpacity style={[styles.stepperBtn, { backgroundColor: colors.inputBg, borderColor: colors.border }]} onPress={() => setMaxDailyTrades(Math.max(1, maxDailyTrades - 1))} disabled={maxDailyTrades <= 1}>
+                <ThemedText style={{ fontSize: 18, fontWeight: '700', color: maxDailyTrades <= 1 ? colors.textMuted : colors.text }}>−</ThemedText>
+              </TouchableOpacity>
+              <ThemedText style={{ fontWeight: '700', fontSize: FontSize.md, minWidth: 24, textAlign: 'center' }}>{maxDailyTrades}</ThemedText>
+              <TouchableOpacity style={[styles.stepperBtn, { backgroundColor: colors.inputBg, borderColor: colors.border }]} onPress={() => setMaxDailyTrades(Math.min(25, maxDailyTrades + 1))} disabled={maxDailyTrades >= 25}>
+                <ThemedText style={{ fontSize: 18, fontWeight: '700', color: maxDailyTrades >= 25 ? colors.textMuted : colors.text }}>+</ThemedText>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -517,6 +509,8 @@ const styles = StyleSheet.create({
   settingTitle: { fontSize: FontSize.sm, fontWeight: '500' },
   settingDesc: { fontSize: FontSize.xs, marginTop: 2 },
   settingAction: { fontSize: FontSize.sm, fontWeight: '600', color: '#888', paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  stepperBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   sliderContainer: { paddingBottom: Spacing.md },
   sliderTrack: { height: 4, borderRadius: 2, overflow: 'hidden', marginBottom: Spacing.xs },
   sliderFill: { height: '100%', borderRadius: 2 },
