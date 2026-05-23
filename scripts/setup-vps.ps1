@@ -62,14 +62,20 @@ try { taskkill /F /IM python.exe 2>&1 | Out-Null } catch {}
 try { taskkill /F /IM terminal64.exe 2>&1 | Out-Null } catch {}
 Start-Sleep -Seconds 2
 
-# Fresh clone every time
+# Fresh clone every time - retry deletion with multiple methods
 if (Test-Path $ROOT) {
     Write-Host "  Removing old directory..." -ForegroundColor Yellow
-    cmd /c "rmdir /S /Q $ROOT 2>nul"
-    if (Test-Path $ROOT) {
-        Write-Host "  Retrying deletion..." -ForegroundColor Yellow
+    $retries = 5
+    while ($retries -gt 0 -and (Test-Path $ROOT)) {
+        try { Remove-Item -Recurse -Force $ROOT -ErrorAction Stop; break } catch {}
+        try { cmd /c "rmdir /S /Q $ROOT 2>nul" } catch {}
         Start-Sleep -Seconds 3
-        cmd /c "rmdir /S /Q $ROOT 2>nul"
+        $retries--
+    }
+    if (Test-Path $ROOT)) {
+        Write-Host "  ERROR: Cannot delete $ROOT - files locked by system." -ForegroundColor Red
+        Write-Host "  Reboot the VPS and run the script again." -ForegroundColor Red
+        exit 1
     }
 }
 git clone $REPO $ROOT
