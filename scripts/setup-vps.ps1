@@ -59,7 +59,13 @@ Write-Host "[2/8] Getting repository..." -ForegroundColor Yellow
 if (Test-Path $ROOT) {
     if (-not (Test-Path "$ROOT\.git")) {
         Write-Host "  Removing incomplete directory from previous run..." -ForegroundColor Yellow
-        Remove-Item -Recurse -Force $ROOT
+        taskkill /F /IM caddy.exe 2>$null
+        taskkill /F /IM caddy_windows_amd64.exe 2>$null
+        taskkill /F /IM python.exe 2>$null
+        taskkill /F /IM terminal64.exe 2>$null
+        Start-Sleep -Seconds 2
+        cmd /c "rmdir /S /Q $ROOT 2>nul"
+        if (Test-Path $ROOT) { Remove-Item -Recurse -Force $ROOT -ErrorAction SilentlyContinue }
     } else {
         Write-Host "  Repository already cloned. Pulling latest..." -ForegroundColor Yellow
         Set-Location $ROOT
