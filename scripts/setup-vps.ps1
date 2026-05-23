@@ -7,7 +7,7 @@
 #>
 
 $ErrorActionPreference = "Stop"
-$ROOT = "C:\futures-bot"
+$ROOT = "C:\futures"
 $REPO = "https://github.com/VYLUXTECHINC/FUTURES.git"
 
 Write-Host "========================================" -ForegroundColor Cyan
