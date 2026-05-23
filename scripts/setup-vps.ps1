@@ -59,10 +59,10 @@ Write-Host "[2/8] Getting repository..." -ForegroundColor Yellow
 if (Test-Path $ROOT) {
     if (-not (Test-Path "$ROOT\.git")) {
         Write-Host "  Removing incomplete directory from previous run..." -ForegroundColor Yellow
-        $null = taskkill /F /IM caddy.exe 2>&1
-        $null = taskkill /F /IM caddy_windows_amd64.exe 2>&1
-        $null = taskkill /F /IM python.exe 2>&1
-        $null = taskkill /F /IM terminal64.exe 2>&1
+        try { taskkill /F /IM caddy.exe 2>&1 | Out-Null } catch {}
+        try { taskkill /F /IM caddy_windows_amd64.exe 2>&1 | Out-Null } catch {}
+        try { taskkill /F /IM python.exe 2>&1 | Out-Null } catch {}
+        try { taskkill /F /IM terminal64.exe 2>&1 | Out-Null } catch {}
         Start-Sleep -Seconds 2
         cmd /c "rmdir /S /Q $ROOT 2>nul"
         if (Test-Path $ROOT) { Remove-Item -Recurse -Force $ROOT -ErrorAction SilentlyContinue }
