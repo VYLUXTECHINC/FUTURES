@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  FUTURES Trading Bot — One-Click VPS Setup
+  FUTURES Trading Bot - One-Click VPS Setup
 .DESCRIPTION
   Automates: Python, dependencies, .env, Cloudflare Tunnel, services, and startup.
   Run this on a fresh Windows VPS as Administrator.
@@ -11,11 +11,11 @@ $ROOT = "C:\futures-bot"
 $REPO = "https://github.com/VYLUXTECHINC/FUTURES.git"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "   FUTURES Trading Bot — VPS Setup" -ForegroundColor Cyan
+Write-Host "   FUTURES Trading Bot - VPS Setup" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# ─── Prerequisites check ──────────────────────────────────
+# ---- Prerequisites check -------------------------------------------
 Write-Host "[1/8] Checking prerequisites..." -ForegroundColor Yellow
 
 # Admin check
@@ -47,14 +47,14 @@ if (-not $git) {
     $url = "https://github.com/git-for-windows/git/releases/download/v2.45.0.windows.1/Git-2.45.0-64-bit.exe"
     $installer = "$env:TEMP\Git-2.45.0-64-bit.exe"
     Invoke-WebRequest -Uri $url -OutFile $installer
-    Start-Process -Wait -FilePath $installer -ArgumentList "/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS=`"icons,ext,reg,assoc`""
+    Start-Process -Wait -FilePath $installer -ArgumentList "/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS='icons,ext,reg,assoc'"
     $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine")
     Write-Host "  Git installed." -ForegroundColor Green
 } else {
     Write-Host "  Git found." -ForegroundColor Green
 }
 
-# ─── Clone repo ───────────────────────────────────────────
+# ---- Clone repo ----------------------------------------------------
 Write-Host ""
 Write-Host "[2/8] Cloning repository..." -ForegroundColor Yellow
 if (Test-Path $ROOT) {
@@ -67,19 +67,19 @@ if (Test-Path $ROOT) {
 }
 Set-Location $ROOT
 
-# ─── Install Python deps ──────────────────────────────────
+# ---- Install Python deps -------------------------------------------
 Write-Host ""
 Write-Host "[3/8] Installing Python dependencies..." -ForegroundColor Yellow
 pip install -r requirements.txt
 Write-Host "  Dependencies installed." -ForegroundColor Green
 
-# ─── Generate encryption key ──────────────────────────────
+# ---- Generate encryption key ---------------------------------------
 Write-Host ""
 Write-Host "[4/8] Generating encryption key..." -ForegroundColor Yellow
 $encKey = python -c "from cryptography.fernet import Fernet; import base64; print(base64.urlsafe_b64encode(Fernet.generate_key()).decode())"
 Write-Host "  Encryption key generated." -ForegroundColor Green
 
-# ─── Create .env ──────────────────────────────────────────
+# ---- Create .env ---------------------------------------------------
 Write-Host ""
 Write-Host "[5/8] Creating .env file..." -ForegroundColor Yellow
 
@@ -108,44 +108,45 @@ foreach ($key in $envVars.Keys) {
     $envVars[$key] = $val
 }
 
-$lines = @()
-$lines.Add("# ============================================================")
-$lines.Add("# FUTURES – Production Environment Variables")
-$lines.Add("# ============================================================")
-$lines.Add("")
-$lines.Add("# --- API Server ---")
-$lines.Add("API_HOST=127.0.0.1")
-$lines.Add("API_PORT=8000")
-$lines.Add("")
-$lines.Add("# --- Allowed Origins ---")
-$lines.Add("ALLOWED_ORIGINS=https://bot.futuretraders.net")
-$lines.Add("")
-$lines.Add("# --- Supabase ---")
-$lines.Add("SUPABASE_URL=$($envVars['SUPABASE_URL'])")
-$lines.Add("SUPABASE_KEY=$($envVars['SUPABASE_KEY'])")
-$lines.Add("SUPABASE_DB_URI=$($envVars['SUPABASE_DB_URI'])")
-$lines.Add("SUPABASE_SERVICE_ROLE_KEY=$($envVars['SUPABASE_SERVICE_ROLE_KEY'])")
-$lines.Add("SUPABASE_JWT_SECRET=$($envVars['SUPABASE_JWT_SECRET'])")
-$lines.Add("")
-$lines.Add("# --- Encryption ---")
-$lines.Add("ENCRYPTION_KEY=$encKey")
-$lines.Add("")
-$lines.Add("# --- AI Copilot ---")
-$lines.Add("AI_BASE_URL=$($envVars['AI_BASE_URL'])")
-$lines.Add("AI_MODEL=$($envVars['AI_MODEL'])")
-$lines.Add("")
-$lines.Add("# --- Logging ---")
-$lines.Add("LOG_LEVEL=INFO")
-$lines.Add("")
-$lines.Add("# --- Telegram Admin Bot ---")
-$lines.Add("TELEGRAM_ADMIN_BOT_TOKEN=$($envVars['TELEGRAM_ADMIN_BOT_TOKEN'])")
-$lines.Add("TELEGRAM_ADMIN_ID_1=$($envVars['TELEGRAM_ADMIN_ID_1'])")
-$lines.Add("TELEGRAM_ADMIN_ID_2=$($envVars['TELEGRAM_ADMIN_ID_2'])")
+$lines = @(
+    "# ============================================================"
+    "# FUTURES - Production Environment Variables"
+    "# ============================================================"
+    ""
+    "# --- API Server ---"
+    "API_HOST=127.0.0.1"
+    "API_PORT=8000"
+    ""
+    "# --- Allowed Origins ---"
+    "ALLOWED_ORIGINS=https://bot.futuretraders.net"
+    ""
+    "# --- Supabase ---"
+    "SUPABASE_URL=$($envVars['SUPABASE_URL'])"
+    "SUPABASE_KEY=$($envVars['SUPABASE_KEY'])"
+    "SUPABASE_DB_URI=$($envVars['SUPABASE_DB_URI'])"
+    "SUPABASE_SERVICE_ROLE_KEY=$($envVars['SUPABASE_SERVICE_ROLE_KEY'])"
+    "SUPABASE_JWT_SECRET=$($envVars['SUPABASE_JWT_SECRET'])"
+    ""
+    "# --- Encryption ---"
+    "ENCRYPTION_KEY=$encKey"
+    ""
+    "# --- AI Copilot ---"
+    "AI_BASE_URL=$($envVars['AI_BASE_URL'])"
+    "AI_MODEL=$($envVars['AI_MODEL'])"
+    ""
+    "# --- Logging ---"
+    "LOG_LEVEL=INFO"
+    ""
+    "# --- Telegram Admin Bot ---"
+    "TELEGRAM_ADMIN_BOT_TOKEN=$($envVars['TELEGRAM_ADMIN_BOT_TOKEN'])"
+    "TELEGRAM_ADMIN_ID_1=$($envVars['TELEGRAM_ADMIN_ID_1'])"
+    "TELEGRAM_ADMIN_ID_2=$($envVars['TELEGRAM_ADMIN_ID_2'])"
+)
 
 $lines -join "`r`n" | Out-File -FilePath "$ROOT\.env" -Encoding ascii
 Write-Host "  .env created at $ROOT\.env" -ForegroundColor Green
 
-# ─── Install & configure Cloudflare Tunnel ────────────────
+# ---- Install and configure Cloudflare Tunnel -----------------------
 Write-Host ""
 Write-Host "[6/8] Setting up Cloudflare Tunnel..." -ForegroundColor Yellow
 
@@ -162,7 +163,7 @@ $env:Path += ";$cfDir"
 
 Write-Host "  Starting authentication..." -ForegroundColor Yellow
 Write-Host "  A browser will open. Log in to Cloudflare and authorize." -ForegroundColor Cyan
-Write-Host "  Press Enter after you've completed the authentication..." -ForegroundColor White
+Write-Host "  Press Enter after you complete the authentication..." -ForegroundColor White
 $null = Read-Host
 cloudflared tunnel login | Out-String | Write-Host
 
@@ -182,7 +183,7 @@ if ($tunnelResult -match "Created tunnel\s+\S+\s+with id\s+(\S+)") {
 
 if (-not $tunnelId) {
     Write-Host "  ERROR: Could not find tunnel ID. Check cloudflared output above." -ForegroundColor Red
-    Write-Host "  You'll need to configure DNS routing manually after setup." -ForegroundColor Yellow
+    Write-Host "  You will need to configure DNS routing manually after setup." -ForegroundColor Yellow
 }
 
 # Write config.yml
@@ -210,7 +211,7 @@ Write-Host "  Installing tunnel as Windows service..." -ForegroundColor Yellow
 cloudflared service install 2>&1 | Out-String | Write-Host
 Write-Host "  Cloudflare Tunnel configured." -ForegroundColor Green
 
-# ─── Install NSSM + register bot as service ──────────────
+# ---- Install NSSM and register bot as service ----------------------
 Write-Host ""
 Write-Host "[7/8] Registering bot as Windows service..." -ForegroundColor Yellow
 
@@ -240,7 +241,7 @@ $pyPath
 
 Write-Host "  Bot service registered." -ForegroundColor Green
 
-# ─── Start everything ─────────────────────────────────────
+# ---- Start everything ----------------------------------------------
 Write-Host ""
 Write-Host "[8/8] Starting services..." -ForegroundColor Yellow
 
@@ -260,9 +261,9 @@ Write-Host "  nssm start/stop/restart FuturesBot" -ForegroundColor Yellow
 Write-Host "  net start/stop cloudflared" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "  To view bot logs:" -ForegroundColor White
-Write-Host "  nssm edit FuturesBot → I/O tab" -ForegroundColor Yellow
+Write-Host "  nssm edit FuturesBot -> I/O tab" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "  Credits:" -ForegroundColor Magenta
-Write-Host "  VYLUX TECH — Development & Architecture" -ForegroundColor Magenta
-Write-Host "  RICHIE RICH — Concept & Vision" -ForegroundColor Magenta
+Write-Host "  VYLUX TECH - Development and Architecture" -ForegroundColor Magenta
+Write-Host "  RICHIE RICH - Concept and Vision" -ForegroundColor Magenta
 Write-Host "========================================" -ForegroundColor Cyan
