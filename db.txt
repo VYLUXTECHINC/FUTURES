@@ -53,7 +53,7 @@ CREATE TABLE public.profiles (
     dry_run             BOOLEAN DEFAULT FALSE,
     auto_compounding    BOOLEAN DEFAULT FALSE,
     display_name        VARCHAR(100) DEFAULT 'Trader',
-    notifications       JSONB DEFAULT '{"trade_execution": true, "trade_closed": true, "daily_summary": true, "loss_cooldown": true, "maintenance": true, "package_expiry": true, "email_trade": false}'::jsonb,
+    notifications       JSONB DEFAULT '{"trade_execution": true, "trade_closed": true, "daily_summary": true, "loss_cooldown": true, "maintenance": true, "email_trade": false}'::jsonb,
     bot_active          BOOLEAN DEFAULT FALSE,
     expo_push_token     TEXT,
     broker_verified     BOOLEAN DEFAULT FALSE,

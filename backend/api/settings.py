@@ -60,7 +60,7 @@ async def get_settings(request: Request) -> dict:
                 "max_daily_trades": max_daily,
                 "notifications": profile.get("notifications", {
                     "trade_execution": True, "trade_closed": True, "daily_summary": True,
-                    "loss_cooldown": True, "maintenance": True, "package_expiry": True, "email_trade": False,
+                    "loss_cooldown": True, "maintenance": True, "email_trade": False,
                 }),
             }
     except Exception as e:
@@ -80,7 +80,7 @@ def _default_settings() -> dict:
         "max_daily_trades": _bot_state_ref.get("max_daily_trades", 5) if _bot_state_ref else 5,
         "notifications": {
             "trade_execution": True, "trade_closed": True, "daily_summary": True,
-            "loss_cooldown": True, "maintenance": True, "package_expiry": True, "email_trade": False,
+            "loss_cooldown": True, "maintenance": True, "email_trade": False,
         },
     }
 

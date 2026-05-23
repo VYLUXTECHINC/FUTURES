@@ -11,23 +11,23 @@
 Users (Web App)
         │
         ▼
-┌─────────────────────┐     HTTPS      ┌──────────────────┐
-│   Your Domain       │ ◄─────────────► │  Caddy (Reverse   │
-│   bot.futuretraders.net             │  Proxy + SSL)     │
-└─────────────────────┘                └────────┬─────────┘
-                                                │ :8000
-                                                ▼
-                                       ┌──────────────────┐
-                                       │  FastAPI Backend  │
-                                       │  (brain + backend)│
-                                       └──┬───────────┬───┘
-                                          │           │
-                              MT5 (local) │           │ Supabase (cloud)
-                                          ▼           ▼
-                                   ┌────────────┐  ┌──────────────────┐
-                                   │ HFM MT5    │  │ PostgreSQL DB    │
-                                   │ terminal   │  │ Auth + Tables    │
-                                   └────────────┘  └──────────────────┘
+┌─────────────────────┐               ┌──────────────────────┐
+│   Your Domain       │ ◄─── HTTPS ──►│  Cloudflare Tunnel   │
+│   bot.futuretraders.net             │  (cloudflared)       │
+└─────────────────────┘               └──────────┬───────────┘
+                                                 │ :8000 (outbound tunnel)
+                                                 ▼
+                                        ┌──────────────────┐
+                                        │  FastAPI Backend  │
+                                        │  (brain + backend)│
+                                        └──┬───────────┬───┘
+                                           │           │
+                               MT5 (local) │           │ Supabase (cloud)
+                                           ▼           ▼
+                                    ┌────────────┐  ┌──────────────────┐
+                                    │ HFM MT5    │  │ PostgreSQL DB    │
+                                    │ terminal   │  │ Auth + Tables    │
+                                    └────────────┘  └──────────────────┘
 ```
 
 **How it works for multiple users:**
@@ -69,25 +69,9 @@ Users (Web App)
 
 ### Step 1.3: Set Up Your Domain DNS
 
-Go to your domain registrar (Cloudflare, Namecheap, GoDaddy, etc.) and add an **A record**:
+Go to your Cloudflare dashboard — DNS is handled automatically by the tunnel (see Phase 4).
 
-| Type | Name | Value | TTL |
-|------|------|-------|-----|
-| A | `bot` (or `app`, `trade`, etc.) | `203.0.113.50` (your VPS IP) | Auto |
-
-This creates `bot.futuretraders.net` pointing to your VPS.
-
-**Cloudflare (recommended):**
-1. Go to DNS → Add Record
-2. Type: `A`, Name: `bot`, Content: your VPS IP
-3. Proxy status: **Proxied** (orange cloud ON) — this gives you free DDoS protection
-4. Save
-
-**Verify it works:**
-```cmd
-nslookup bot.futuretraders.net
-```
-Should return your VPS IP. Propagation takes 1-48 hours (usually minutes with Cloudflare).
+**Note:** With Cloudflare Tunnel, you don't need a DNS A record pointing to your VPS IP. The tunnel creates a CNAME automatically when you run `cloudflared tunnel route dns`.
 
 ### Step 1.4: Set Up Supabase (Database + Auth)
 
@@ -110,10 +94,10 @@ Should return your VPS IP. Propagation takes 1-48 hours (usually minutes with Cl
 1. In Supabase dashboard, go to **SQL Editor**
 2. Open your `db.txt` file, copy ALL the SQL
 3. Paste into the SQL Editor → Click **Run**
-4. You should see "Success. No rows returned" or similar — this means all 11 tables, policies, and triggers were created
+4. You should see "Success. No rows returned" or similar — this means all tables, policies, and triggers were created
 
 **Verify tables exist:**
-Go to **Table Editor** — you should see: `profiles`, `trades`, `bot_state`, `signals`, `mt5_credentials`, `support_tickets`, `user_settings`, `system_logs`, `news_state`, `legal_acceptances`, `referrals`, `referral_signups`
+Go to **Table Editor** — you should see: `profiles`, `trades`, `bot_state`, `signals`, `mt5_credentials`, `support_tickets`, `user_settings`, `system_logs`, `news_state`, `legal_acceptances`
 
 ---
 
@@ -148,13 +132,14 @@ Go to **Table Editor** — you should see: `profiles`, `trades`, `bot_state`, `s
 
 > **Note:** If you use a different broker, adjust the server name accordingly. The exact server name is visible in MT5 → File → Login to Trade Account → Server dropdown.
 
-### Step 2.3: Install Caddy (HTTPS Reverse Proxy)
+### Step 2.3: Install Cloudflare Tunnel (cloudflared)
 
-Caddy gives you free automatic SSL certificates — no manual cert management needed.
+Cloudflare Tunnel creates a secure outbound connection from your VPS to Cloudflare's edge — no open ports needed.
 
-1. Download from: https://caddyserver.com/download (select Windows)
-2. Extract `caddy.exe` to `C:\caddy\`
-3. Verify: Open Command Prompt → `C:\caddy\caddy.exe version`
+1. Download `cloudflared` from: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+2. Extract `cloudflared.exe` to `C:\cloudflared\`
+3. Verify: Open Command Prompt → `C:\cloudflared\cloudflared.exe version`
+4. Authenticate: `cloudflared tunnel login` — this opens a browser to authorize with your Cloudflare account
 
 ---
 
@@ -231,8 +216,8 @@ Create `C:\futures-bot\.env` with these values:
 API_HOST=127.0.0.1
 API_PORT=8000
 
-# --- Allowed Origins (your domain + local dev) ---
-ALLOWED_ORIGINS=https://bot.futuretraders.net,http://localhost:3000,http://localhost:8081
+# --- Allowed Origins (your domain) ---
+ALLOWED_ORIGINS=https://bot.futuretraders.net
 
 # --- Supabase (from Step 1.4) ---
 SUPABASE_URL=https://xxxxx.supabase.co
@@ -246,14 +231,10 @@ SUPABASE_JWT_SECRET=your-jwt-secret-here
 # --- Encryption (from Step 3.3) ---
 ENCRYPTION_KEY=your-generated-encryption-key-here
 
-# --- Frontend Config (injected via /api/config) ---
-EXPO_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
-EXPO_PUBLIC_SUPABASE_KEY=your-anon-public-key-here
-
-# --- OpenRouter / AI Copilot (optional, for AI features) ---
+# --- AI Copilot ---
 AI_BASE_URL=https://all-in-1-ais.officialhectormanuel.workers.dev
-
 AI_MODEL=deepseek
+
 # --- Logging ---
 LOG_LEVEL=INFO
 
@@ -268,7 +249,7 @@ TELEGRAM_ADMIN_ID_2=second-admin-id-optional
 - `https://xxxxx.supabase.co` → your Supabase project URL
 - `your-anon-public-key-here` → from Supabase Settings → API
 - `SUPABASE_DB_URI` → the Transaction pooler connection string (port 6543)
-- `your-service-role-key-here` → from Supabase Settings → API (service_role secret)
+- `your-service-role-key-here` → from Supabase Settings → API (service_role key)
 - `your-jwt-secret-here` → from Supabase Dashboard → Settings → API → JWT Secret
 - `your-generated-encryption-key-here` → from Step 3.3
 - Telegram values → create a bot via @BotFather on Telegram, get the token, and your user ID via @userinfobot
@@ -291,72 +272,84 @@ Press `Ctrl+C` to stop. If there are errors, fix them before proceeding.
 
 ---
 
-## Phase 4: HTTPS with Caddy
+## Phase 4: HTTPS with Cloudflare Tunnel
 
-### Step 4.1: Create Caddyfile
+### Step 4.1: Create the Tunnel
 
-Create `C:\caddy\Caddyfile` (no file extension — use Notepad and save as "All files"):
-
-```
-bot.futuretraders.net {
-    reverse_proxy 127.0.0.1:8000
-
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-        Referrer-Policy "strict-origin-when-cross-origin"
-    }
-}
-```
-
-Replace `bot.futuretraders.net` with your actual subdomain.
-
-### Step 4.2: Test Caddy
+After authenticating with `cloudflared tunnel login`, create a named tunnel:
 
 ```cmd
-cd C:\caddy
-caddy.exe run
+cd C:\cloudflared
+cloudflared tunnel create futures-bot
 ```
 
-You should see:
-```
-obtaining certificate: bot.futuretraders.net
-certificate obtained successfully
-certificate stored in: C:\Users\...\AppData\Local\Caddy\certificates\...
+This creates a credentials JSON file in `C:\Users\<you>\.cloudflared\`. Note the **Tunnel ID** (a UUID) — you'll need it below.
+
+### Step 4.2: Configure the Tunnel
+
+Create `C:\cloudflared\config.yml`:
+
+```yaml
+tunnel: YOUR-TUNNEL-ID-HERE
+credentials-file: C:\Users\<you>\.cloudflared\<TUNNEL-ID>.json
+
+ingress:
+  - hostname: bot.futuretraders.net
+    service: http://localhost:8000
+  - service: http_status:404
 ```
 
-Open `https://bot.futuretraders.net` in your browser — you should see a padlock and your bot's API response.
+Replace `YOUR-TUNNEL-ID-HERE` with your actual tunnel ID (from the `create` step).
+
+### Step 4.3: Configure DNS in Cloudflare
+
+Point your domain to the tunnel:
+
+```cmd
+cloudflared tunnel route dns futures-bot bot.futuretraders.net
+```
+
+Or from the Cloudflare Dashboard:
+1. Go to **Zero Trust → Networks → Tunnels**
+2. Select your tunnel → **Edit** → add a public hostname:
+   - **Subdomain:** `bot`
+   - **Domain:** `futuretraders.net`
+   - **Service:** `http://localhost:8000`
+3. Save
+
+### Step 4.4: Test the Tunnel
+
+```cmd
+cloudflared tunnel run futures-bot
+```
+
+Open `https://bot.futuretraders.net` in your browser — you should see your bot's API response.
 
 Press `Ctrl+C` to stop.
+
+### Step 4.5: Cloudflare SSL Settings
+
+In Cloudflare Dashboard:
+1. **SSL/TLS → Overview:** Set to **Full (strict)**
+2. **SSL/TLS → Edge Certificates:**
+   - ✅ Always Use HTTPS
+   - ✅ Automatic HTTPS Rewrites
 
 ---
 
 ## Phase 5: Windows Firewall
 
-### Step 5.1: Configure Firewall Rules
+With Cloudflare Tunnel, all traffic is **outbound-only** — no inbound ports needed.
 
-Run these commands in an **Administrator** Command Prompt:
+### Step 5.1: Confirm Outbound Connectivity
+
+Just ensure your VPS has outbound internet access (it will, by default). Run this to verify:
 
 ```cmd
-:: Allow HTTP (needed for Caddy's Let's Encrypt certificate renewal)
-netsh advfirewall firewall add rule name="HTTP" dir=in action=allow protocol=TCP localport=80
-
-:: Allow HTTPS
-netsh advfirewall firewall add rule name="HTTPS" dir=in action=allow protocol=TCP localport=443
-
-:: Block port 8000 from external access (only localhost can reach the API directly)
-netsh advfirewall firewall add rule name="Block API Port" dir=in action=block protocol=TCP localport=8000 remoteip=any
+curl -I https://bot.futuretraders.net
 ```
 
-### Step 5.2: Cloudflare Settings (if using)
-
-In Cloudflare dashboard:
-1. **SSL/TLS → Overview:** Set to **Full** or **Full (strict)**
-2. **SSL/TLS → Edge Certificates:**
-   - ✅ Always Use HTTPS
-   - ✅ Automatic HTTPS Rewrites
-3. **DNS:** Make sure your A record has the orange cloud (Proxied) ON
+You don't need to open or close any inbound firewall ports. The tunnel connection is initiated from your VPS to Cloudflare.
 
 ---
 
@@ -388,32 +381,26 @@ A GUI window opens. Fill in:
 
 Click **Install service**.
 
-### Step 6.3: Install Caddy as a Service
+### Step 6.3: Install Cloudflare Tunnel as a Service
 
 ```cmd
-C:\nssm\nssm.exe install CaddyProxy
+cd C:\cloudflared
+cloudflared service install
 ```
 
-| Tab | Field | Value |
-|-----|-------|-------|
-| Application | Path | `C:\caddy\caddy.exe` |
-| Application | Startup directory | `C:\caddy` |
-| Application | Arguments | `run` |
-| Details | Display name | `Caddy HTTPS Proxy` |
-
-Click **Install service**.
+This registers the tunnel as a Windows service that starts automatically on boot.
 
 ### Step 6.4: Start Both Services
 
 ```cmd
 nssm start FuturesBot
-nssm start CaddyProxy
+net start cloudflared
 ```
 
 Verify:
 ```cmd
-nssm status FuturesBot    → should show SERVICE_RUNNING
-nssm status CaddyProxy    → should show SERVICE_RUNNING
+nssm status FuturesBot         → should show SERVICE_RUNNING
+cloudflared tunnel list        → should show futures-bot as active
 ```
 
 ### Step 6.5: Verify Everything
@@ -558,30 +545,7 @@ for user in users:
 
 ---
 
-## Phase 11: Referral System Setup
-
-Your bot includes a referral system for partner brokers (e.g., HFM).
-
-### Step 11.1: Configure Referral Code
-
-The SQL in `db.txt` already seeds a referral:
-```sql
-INSERT INTO public.referrals (code, label, broker, referral_link, is_active)
-VALUES ('HFM30489955', 'HFM Partner', 'HFM', 'https://www.hfm.com/sv/en/?refid=30489955', TRUE)
-```
-
-Update the `referral_link` with your actual broker partner link.
-
-### Step 11.2: How It Works
-
-1. User signs up with a referral code
-2. A row is created in `referral_signups` linking the user to the code
-3. Admin dashboard can track total signups per referral code
-4. The `referrals` table tracks `total_signups` count
-
----
-
-## Phase 12: Monitoring & Maintenance
+## Phase 11: Monitoring & Maintenance
 
 ### Daily Checks
 
@@ -592,7 +556,7 @@ Update the `referral_link` with your actual broker partner link.
 
 ### Weekly Checks
 
-1. **Caddy SSL cert:** Auto-renews, but verify with `curl -I https://bot.futuretraders.net`
+1. **Tunnel health:** `cloudflared tunnel info futures-bot`
 2. **Disk space:** `dir C:\` — ensure enough free space
 3. **Windows Updates:** Apply security updates, restart if needed
 4. **Supabase usage:** Check project dashboard for row count, storage usage
@@ -612,11 +576,11 @@ nssm start FuturesBot
 nssm status FuturesBot
 ```
 
-### Restarting Caddy
+### Restarting Cloudflare Tunnel
 
 ```cmd
-nssm stop CaddyProxy
-nssm start CaddyProxy
+net stop cloudflared
+net start cloudflared
 ```
 
 ### Viewing Service Logs
@@ -675,10 +639,11 @@ Find exact name: MT5 → File → Login to Trade Account → look at Server drop
 
 ### HTTPS Not Working
 
-1. Check DNS: `nslookup bot.futuretraders.net` → should return VPS IP
-2. Check port 80 is open (Caddy needs it for Let's Encrypt)
-3. Cloudflare SSL/TLS mode must be **Full** or **Full (strict)**
-4. Check Caddy logs: `C:\caddy\caddy.exe run` (run manually to see errors)
+1. Check DNS: `nslookup bot.futuretraders.net` → should return a Cloudflare IP (not your VPS)
+2. Check tunnel is running: `cloudflared tunnel list` → should show `active`
+3. Test locally: `curl http://localhost:8000/api/status` → bot must respond
+4. Check tunnel logs: `cloudflared tunnel run futures-bot` (run manually to see errors)
+5. Cloudflare SSL/TLS mode must be **Full (strict)**
 
 ### No Trades Being Placed
 
@@ -720,11 +685,11 @@ Before going live, verify EVERY item:
 - [ ] `ALLOWED_ORIGINS` only lists your domain (no `*`)
 - [ ] HTTPS working (padlock in browser)
 - [ ] MT5 passwords encrypted in database (not plaintext)
-- [ ] Windows Firewall blocks port 8000 from external
+- [ ] No inbound ports open on VPS firewall (tunnel is outbound-only)
 - [ ] Supabase RLS policies are enabled on ALL tables
 - [ ] `ENCRYPTION_KEY` is unique and backed up securely
 - [ ] `SUPABASE_JWT_SECRET` is configured (not empty)
-- [ ] `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` are set for frontend config
+- [ ] `SUPABASE_URL` and `SUPABASE_KEY` are set for frontend config
 - [ ] Telegram admin IDs are YOUR IDs only
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` is never exposed to frontend
 - [ ] VPS has a strong administrator password
@@ -743,8 +708,9 @@ Before going live, verify EVERY item:
 | `nssm stop FuturesBot` | Stop bot service |
 | `nssm restart FuturesBot` | Restart bot service |
 | `nssm status FuturesBot` | Check service status |
-| `nssm start CaddyProxy` | Start HTTPS proxy |
-| `nssm stop CaddyProxy` | Stop HTTPS proxy |
+| `net start cloudflared` | Start Cloudflare Tunnel |
+| `net stop cloudflared` | Stop Cloudflare Tunnel |
+| `cloudflared tunnel list` | List tunnels and status |
 | `curl https://bot.futuretraders.net/api/status` | Check bot health |
 | `taskkill /F /IM terminal64.exe` | Kill MT5 process |
 | `pip install -r requirements.txt` | Install/update dependencies |
@@ -760,7 +726,7 @@ Before going live, verify EVERY item:
 | Windows VPS (2CPU/4GB) | $10-25/mo |
 | Supabase (free tier) | $0 (up to 500MB DB, 50k MAU) |
 | Domain name | $10-15/year |
-| Cloudflare (free tier) | $0 |
+| Cloudflare Tunnel (free tier) | $0 |
 | HFM Demo account | $0 |
 | HFM Live account | $0 (spread-based) |
 | OpenRouter API (optional) | Pay-per-use (~$5-20/mo) |

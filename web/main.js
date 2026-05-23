@@ -889,7 +889,7 @@ function updateSettingsUI() {
     { key:'daily_summary', label:'Daily Summary' },
     { key:'loss_cooldown', label:'Loss Cooldown' },
     { key:'maintenance', label:'Maintenance' },
-    { key:'package_expiry', label:'Package Expiry' },
+
     { key:'email_trade', label:'Email Notifications' },
   ];
   notifList.innerHTML = cats.map(c => {
