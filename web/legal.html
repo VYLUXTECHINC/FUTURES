@@ -55,7 +55,7 @@
     .terms-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 1rem;
       margin-bottom: 2rem;
       padding-bottom: 1.25rem;
       border-bottom: 1px solid var(--border);
@@ -67,18 +67,21 @@
       letter-spacing: -0.01em;
     }
     .back-btn {
-      background: none;
-      border: none;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
       cursor: pointer;
       color: var(--text);
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-family: 'Inter', sans-serif;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
       transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
     }
-    .back-btn:hover { background: var(--input-bg); }
+    .back-btn:hover { background: var(--border); }
     .terms-body {
       display: flex;
       flex-direction: column;
@@ -106,8 +109,8 @@
 <body>
   <div class="terms-card">
     <div class="terms-header">
-      <h1 id="pageTitle">Terms & Conditions</h1>
       <button class="back-btn" onclick="goBack()">← Back</button>
+      <h1 id="pageTitle">Terms & Conditions</h1>
     </div>
     <div class="terms-body" id="termsBody">
       <div class="terms-section">
