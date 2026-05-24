@@ -171,10 +171,15 @@ if (-not (Test-Path "$cfDir\cloudflared.exe")) {
 
 $env:Path += ";$cfDir"
 
-Write-Host "  A browser will open for Cloudflare login." -ForegroundColor Cyan
-Write-Host "  Log in, select your account, then come back here and press Enter." -ForegroundColor White
-$null = Read-Host
-cloudflared tunnel login | Out-String | Write-Host
+if (Test-Path "$env:USERPROFILE\.cloudflared\cert.pem") {
+    Write-Host "  Cloudflare certificate already exists, skipping login." -ForegroundColor Green
+} else {
+    Write-Host "  Running cloudflared login... (on a headless VPS it will print a URL)" -ForegroundColor Cyan
+    Write-Host "  -> Copy the URL, open it in your LOCAL machine's browser" -ForegroundColor Yellow
+    Write-Host "  -> Log in and select your account" -ForegroundColor Yellow
+    Write-Host "  -> This script will continue automatically once login completes" -ForegroundColor Yellow
+    cloudflared tunnel login 2>&1 | ForEach-Object { Write-Host $_ }
+}
 
 $tunnelName = "futures-bot"
 Write-Host "  Creating tunnel '$tunnelName'..." -ForegroundColor Yellow
@@ -226,12 +231,12 @@ $nssmDir = "C:\nssm"
 if (-not (Test-Path "$nssmDir\nssm.exe")) {
     Write-Host "  Downloading NSSM..." -ForegroundColor Yellow
     New-Item -ItemType Directory -Force -Path $nssmDir | Out-Null
-    $url = "https://nssm.cc/release/nssm-2.24.zip"
+    $url = "https://www.nssm.cc/ci/nssm-2.24-101-g897c7ad.zip"
     $zip = "$env:TEMP\nssm.zip"
     Invoke-WebRequest -Uri $url -OutFile $zip
-    Expand-Archive -Path $zip -DestinationPath "$env:TEMP\nssm" -Force
-    Copy-Item "$env:TEMP\nssm\nssm-2.24\win64\nssm.exe" "$nssmDir\nssm.exe"
-    Remove-Item -Recurse -Force "$env:TEMP\nssm" -ErrorAction SilentlyContinue
+    Expand-Archive -Path $zip -DestinationPath "$env:TEMP\nssm_extracted" -Force
+    Copy-Item "$env:TEMP\nssm_extracted\nssm-2.24-101-g897c7ad\win64\nssm.exe" "$nssmDir\nssm.exe" -Force
+    Remove-Item "$env:TEMP\nssm_extracted" -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item $zip -ErrorAction SilentlyContinue
 }
 

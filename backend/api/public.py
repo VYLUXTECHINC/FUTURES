@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/api/health")
 async def root() -> dict:
     return {"message": "FUTURES Trading Bot API is running"}
 
