@@ -145,12 +145,12 @@
         <input type="password" id="loginPassword" placeholder="••••••••" required minlength="6" />
       </div>
       <div class="forgot">
-        <a href="forgot_password.html">Forgot password?</a>
+        <a href="/forgot-password">Forgot password?</a>
       </div>
       <p class="error" id="loginError"></p>
       <button type="submit" class="btn" id="loginBtn">Login</button>
       <div class="footer">
-        Don't have an account? <a href="signup.html">Create new account</a>
+        Don't have an account? <a href="/signup">Create new account</a>
       </div>
     </form>
   </div>
@@ -181,7 +181,7 @@
         btn.textContent = 'Login';
         return;
       }
-      window.location.href = 'dasboard.html';
+      window.location.href = '/dashboard';
     });
     initSupabase();
   </script>

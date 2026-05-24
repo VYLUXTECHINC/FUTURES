@@ -15,6 +15,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -197,6 +198,22 @@ set_settings_state_ref(_bot_state)
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
 if WEB_DIR.exists():
+    PAGE_MAP = {
+        "/sign": "sign.html",
+        "/signup": "signup.html",
+        "/dashboard": "dasboard.html",
+        "/forgot-password": "forgot_password.html",
+        "/verification": "verification.html",
+        "/settings": "settings.html",
+        "/support": "support.html",
+        "/notifications": "notifications.html",
+        "/legal": "legal.html",
+        "/mt5": "mt5.html",
+        "/copilot": "copilot.html",
+        "/accountability": "accountability.html",
+    }
+    for route, file in PAGE_MAP.items():
+        app.get(route)(lambda f=file: FileResponse(str(WEB_DIR / f)))
     app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="web")
 else:
     logger.warning("web/ directory not found at %s", WEB_DIR)

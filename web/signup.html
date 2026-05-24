@@ -118,7 +118,7 @@
       <p class="success" id="signupSuccess"></p>
       <button type="submit" class="btn" id="signupBtn">Create Account</button>
       <div class="footer">
-        Already have an account? <a href="sign.html">Login</a>
+        Already have an account? <a href="/sign">Login</a>
       </div>
     </form>
   </div>
@@ -155,7 +155,7 @@
       if (data?.user?.identities?.length === 0) { errorEl.textContent = 'An account with this email already exists.'; btn.disabled = false; btn.textContent = 'Create Account'; return; }
       successEl.textContent = 'Account created! Check your email for confirmation.';
       btn.textContent = 'Account created!';
-      setTimeout(() => { window.location.href = 'verification.html'; }, 2000);
+      setTimeout(() => { window.location.href = '/verification'; }, 2000);
     });
     initSupabase();
   </script>
