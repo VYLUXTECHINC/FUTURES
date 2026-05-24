@@ -1,13 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/jpeg" href="logo.jpg" />
   <title>FUTURES</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/dancing-script@5.0.18/index.css" />
-  <link href="https://fonts.bunny.net/css?family=inter:400;500" rel="stylesheet" />
+  <link href="https://fonts.bunny.net/css?family=inter:400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    /* ============================================================
+       GLOBAL STYLES
+       ============================================================ */
     *,
     *::before,
     *::after {
@@ -17,96 +21,220 @@
     }
 
     :root {
-      --color-bg: #000000;
-      --color-text: #ffffff;
-      --color-motto: #bbddff;
+      --bg: #000000;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --text-heading: #f0f0f0;
+      --border: #1a1a1a;
+      --surface: #0a0a0a;
+      --input-bg: #050505;
+      --card-bg: rgba(15, 15, 15, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #ffffff;
+      --primary-fg: #000000;
+      --radius-sm: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      --transition: all 0.2s ease;
       --glow-white: rgba(255, 255, 255, 0.06);
       --glow-text: rgba(255, 255, 255, 0.3);
       --accent-border: rgba(100, 180, 255, 0.3);
+      --color-motto: #bbddff;
+      --card-bg-alt: rgba(15, 15, 15, 0.9);
+      --card-border-alt: rgba(255, 255, 255, 0.08);
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning-bg: rgba(234, 179, 8, 0.1);
+      --warning-border: rgba(234, 179, 8, 0.3);
+      --warning-text: #eab308;
+      --danger-bg: rgba(239, 68, 68, 0.1);
+      --danger-border: rgba(239, 68, 68, 0.3);
+      --danger-text: #ef4444;
+      --profit: #22c55e;
+      --loss: #ef4444;
+    }
+
+    [data-theme="light"] {
+      --bg: #eef3fc;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --text-heading: #0a2540;
+      --border: #e2e8f0;
+      --surface: #ffffff;
+      --input-bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(43, 127, 255, 0.3);
+      --primary: #2563eb;
+      --primary-fg: #ffffff;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      --glow-white: rgba(43, 127, 255, 0.06);
+      --glow-text: rgba(43, 127, 255, 0.3);
+      --accent-border: rgba(43, 127, 255, 0.3);
+      --color-motto: #2563eb;
+      --card-bg-alt: rgba(255, 255, 255, 0.94);
+      --card-border-alt: rgba(43, 127, 255, 0.3);
+      --success: #2b8c4a;
+      --error: #e5484d;
+      --warning-bg: #fffbeb;
+      --warning-border: #fde68a;
+      --warning-text: #92400e;
+      --danger-bg: #fef2f2;
+      --danger-border: #fecaca;
+      --danger-text: #991b1b;
+      --profit: #2b8c4a;
+      --loss: #e5484d;
     }
 
     html,
     body {
       width: 100%;
       height: 100%;
-      overflow: hidden;
-      background: var(--color-bg);
+      overflow-x: hidden;
+      background: var(--bg);
+      color: var(--text);
       font-family: "Inter", sans-serif;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
-    .splash-container {
+    #app {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .page-section {
+      display: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Global Toast */
+    .toast-global {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--card-bg-alt);
+      border: 1px solid var(--card-border-alt);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: var(--shadow);
+      font-size: 0.9rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      pointer-events: none;
+      color: var(--text);
+    }
+    .toast-global.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast-global.success {
+      border-color: var(--success);
+      color: var(--success);
+    }
+    .toast-global.error {
+      border-color: var(--error);
+      color: var(--error);
+    }
+
+    /* ============================================================
+       SPLASH PAGE
+       ============================================================ */
+    #page-splash .splash-container {
       position: relative;
       width: 100%;
-      height: 100%;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(
-        circle at 50% 40%,
-        var(--glow-white) 0%,
-        transparent 80%
-      );
+      background: radial-gradient(circle at 50% 40%, var(--glow-white) 0%, transparent 80%);
       transition: opacity 0.6s ease-out;
       will-change: opacity;
       cursor: pointer;
     }
 
-    .splash-container.fade-out {
+    #page-splash .splash-container.fade-out {
       opacity: 0;
       pointer-events: none;
     }
 
-    .scan-line {
+    #page-splash .scan-line {
       position: absolute;
       top: 38%;
       left: 0;
       width: 100%;
       height: 1px;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.6) 50%,
-        transparent 100%
-      );
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
       transform: translateY(-40px);
       opacity: 0;
       pointer-events: none;
     }
 
-    .scan-line.animate {
+    #page-splash .scan-line.animate {
       animation: scanSweep 0.8s ease-out 0.6s forwards;
     }
 
     @keyframes scanSweep {
-      0% { transform: translateY(-40px); opacity: 0; }
-      20% { opacity: 0.6; }
-      100% { transform: translateY(25px); opacity: 0; }
+      0% {
+        transform: translateY(-40px);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateY(25px);
+        opacity: 0;
+      }
     }
 
-    .micro-dot {
+    #page-splash .micro-dot {
       position: absolute;
       width: 3px;
       height: 3px;
-      background: var(--color-text);
+      background: var(--text);
       border-radius: 50%;
       opacity: 0;
       pointer-events: none;
     }
 
-    .micro-dot.left-dot { top: 38%; left: 25%; }
-    .micro-dot.right-dot { top: 38%; right: 25%; }
-
-    .micro-dot.left-dot.animate { animation: dotFlicker 0.6s ease-out 1s forwards; }
-    .micro-dot.right-dot.animate { animation: dotFlicker 0.6s ease-out 1.1s forwards; }
-
-    @keyframes dotFlicker {
-      0% { transform: scale(0.5); opacity: 0; }
-      50% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(0); opacity: 0; }
+    #page-splash .micro-dot.left-dot {
+      top: 38%;
+      left: 25%;
+    }
+    #page-splash .micro-dot.right-dot {
+      top: 38%;
+      right: 25%;
     }
 
-    .title-wrapper {
+    #page-splash .micro-dot.left-dot.animate {
+      animation: dotFlicker 0.6s ease-out 1s forwards;
+    }
+    #page-splash .micro-dot.right-dot.animate {
+      animation: dotFlicker 0.6s ease-out 1.1s forwards;
+    }
+
+    @keyframes dotFlicker {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+
+    #page-splash .title-wrapper {
       position: relative;
       z-index: 2;
       display: flex;
@@ -114,11 +242,11 @@
       justify-content: center;
     }
 
-    .futures-title {
+    #page-splash .futures-title {
       font-family: "Dancing Script", cursive;
       font-weight: 700;
       font-size: clamp(3.2rem, 16vw, 7.5rem);
-      color: var(--color-text);
+      color: var(--text);
       letter-spacing: 0.02em;
       text-shadow: 0 0 12px var(--glow-text);
       display: flex;
@@ -127,7 +255,7 @@
       -webkit-user-select: none;
     }
 
-    .futures-letter {
+    #page-splash .futures-letter {
       display: inline-block;
       opacity: 0;
       transform: scale(0.85) translateY(10px);
@@ -136,7 +264,7 @@
       will-change: opacity, transform, filter;
     }
 
-    .futures-letter.visible {
+    #page-splash .futures-letter.visible {
       opacity: 1;
       transform: scale(1) translateY(0);
       filter: blur(0);
@@ -145,16 +273,23 @@
         filter 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    .futures-title.breathing {
+    #page-splash .futures-title.breathing {
       animation: breathe 5s ease-in-out infinite;
     }
 
     @keyframes breathe {
-      0%, 100% { transform: scale(1); text-shadow: 0 0 12px var(--glow-text); }
-      50% { transform: scale(1.008); text-shadow: 0 0 20px rgba(255, 255, 255, 0.45), 0 0 40px rgba(100, 180, 255, 0.15); }
+      0%,
+      100% {
+        transform: scale(1);
+        text-shadow: 0 0 12px var(--glow-text);
+      }
+      50% {
+        transform: scale(1.008);
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.45), 0 0 40px rgba(100, 180, 255, 0.15);
+      }
     }
 
-    .motto {
+    #page-splash .motto {
       margin-top: 2.5rem;
       font-family: "Inter", sans-serif;
       font-size: 1rem;
@@ -173,12 +308,12 @@
       -webkit-user-select: none;
     }
 
-    .motto.visible {
+    #page-splash .motto.visible {
       opacity: 1;
       transform: translateY(0);
     }
 
-    .tap-hint {
+    #page-splash .tap-hint {
       position: absolute;
       bottom: 2.5rem;
       font-family: "Inter", sans-serif;
@@ -191,11 +326,11 @@
       -webkit-user-select: none;
     }
 
-    .tap-hint.visible {
+    #page-splash .tap-hint.visible {
       opacity: 1;
     }
 
-    .particle {
+    #page-splash .particle {
       position: absolute;
       width: 2px;
       height: 2px;
@@ -205,174 +340,2266 @@
       opacity: 0;
     }
 
-    .particle.animate {
+    #page-splash .particle.animate {
       animation: particleFloat 3s ease-out forwards;
     }
 
     @keyframes particleFloat {
-      0% { opacity: 0; transform: translateY(0) scale(0); }
-      20% { opacity: 0.6; transform: translateY(-10px) scale(1); }
-      100% { opacity: 0; transform: translateY(-40px) scale(0.3); }
+      0% {
+        opacity: 0;
+        transform: translateY(0) scale(0);
+      }
+      20% {
+        opacity: 0.6;
+        transform: translateY(-10px) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.3);
+      }
     }
 
     @media (max-width: 480px) {
-      .motto { font-size: 0.75rem; margin-top: 2rem; padding: 0.4rem 1rem; }
-      .tap-hint { font-size: 0.65rem; bottom: 1.5rem; }
+      #page-splash .motto {
+        font-size: 0.75rem;
+        margin-top: 2rem;
+        padding: 0.4rem 1rem;
+      }
+      #page-splash .tap-hint {
+        font-size: 0.65rem;
+        bottom: 1.5rem;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .futures-letter, .motto, .scan-line, .micro-dot, .particle {
+      #page-splash .futures-letter,
+      #page-splash .motto,
+      #page-splash .scan-line,
+      #page-splash .micro-dot,
+      #page-splash .particle {
         animation: none !important;
         transition: opacity 0.3s ease-out !important;
       }
-      .futures-letter.visible { opacity: 1 !important; transform: none !important; filter: none !important; }
-      .motto.visible { opacity: 1 !important; transform: none !important; }
-      .futures-title.breathing { animation: none !important; }
+      #page-splash .futures-letter.visible {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+      #page-splash .motto.visible {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      #page-splash .futures-title.breathing {
+        animation: none !important;
+      }
+    }
+
+    /* ============================================================
+       SIGN / SIGNUP PAGES
+       ============================================================ */
+    #page-sign,
+    #page-signup {
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: var(--bg);
+    }
+
+    #page-sign.auth-visible,
+    #page-signup.auth-visible {
+      display: flex;
+    }
+
+    #page-sign .card,
+    #page-signup .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    #page-sign .logo,
+    #page-signup .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    #page-sign .logo h1,
+    #page-signup .logo h1 {
+      font-family: "Dancing Script", cursive;
+      font-size: 3rem;
+      font-weight: 700;
+    }
+
+    #page-sign .logo p,
+    #page-signup .logo p {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+    }
+
+    #page-sign .field,
+    #page-signup .field {
+      margin-bottom: 1rem;
+    }
+
+    #page-sign .field label,
+    #page-signup .field label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 500;
+    }
+
+    #page-sign .field input,
+    #page-signup .field input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    #page-sign .field input:focus,
+    #page-signup .field input:focus {
+      outline: none;
+      border-color: #333;
+    }
+
+    #page-sign .field input::placeholder,
+    #page-signup .field input::placeholder {
+      color: #555;
+    }
+
+    #page-sign .forgot {
+      text-align: right;
+      margin-bottom: 1.2rem;
+    }
+
+    #page-sign .forgot a {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    #page-sign .forgot a:hover {
+      color: var(--text);
+    }
+
+    #page-sign .error,
+    #page-signup .error {
+      color: var(--error);
+      font-size: 0.82rem;
+      text-align: center;
+      margin-bottom: 0.75rem;
+      min-height: 1.2em;
+    }
+
+    #page-signup .success {
+      color: var(--success);
+      font-size: 0.82rem;
+      text-align: center;
+      margin-bottom: 0.75rem;
+      min-height: 1.2em;
+    }
+
+    #page-sign .btn,
+    #page-signup .btn {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--primary);
+      color: var(--primary-fg);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: "Inter", sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    #page-sign .btn:hover,
+    #page-signup .btn:hover {
+      opacity: 0.9;
+    }
+
+    #page-sign .btn:disabled,
+    #page-signup .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #page-sign .footer,
+    #page-signup .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    #page-sign .footer a,
+    #page-signup .footer a {
+      color: var(--text);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    #page-sign .footer a:hover,
+    #page-signup .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      #page-sign .card,
+      #page-signup .card {
+        padding: 2rem 1.5rem;
+      }
+      #page-sign .logo h1,
+      #page-signup .logo h1 {
+        font-size: 2.5rem;
+      }
+    }
+
+    /* ============================================================
+       FORGOT PASSWORD PAGE
+       ============================================================ */
+    #page-forgot-password {
+      min-height: 100vh;
+      display: none;
+      background: var(--bg);
+      padding: 1.5rem 1rem;
+    }
+
+    #page-forgot-password.fp-visible {
+      display: block;
+    }
+
+    #page-forgot-password .app-container {
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    #page-forgot-password .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    #page-forgot-password .back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      font-family: "Inter", sans-serif;
+    }
+
+    #page-forgot-password .page-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-heading);
+    }
+
+    #page-forgot-password .theme-toggle {
+      width: 40px;
+      height: 40px;
+      background: var(--card-bg-alt);
+      border: 1px solid var(--card-border-alt);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      transition: var(--transition);
+    }
+
+    #page-forgot-password .theme-toggle:hover {
+      transform: scale(1.05);
+    }
+
+    #page-forgot-password .card {
+      background: var(--card-bg-alt);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border-alt);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    #page-forgot-password .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #page-forgot-password .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+
+    #page-forgot-password .step-dot.active {
+      background: var(--primary);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    #page-forgot-password .instruction-text {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+
+    #page-forgot-password .form-group {
+      margin-bottom: 1rem;
+    }
+
+    #page-forgot-password .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    #page-forgot-password .form-input {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+      font-size: 0.95rem;
+      transition: var(--transition);
+    }
+
+    #page-forgot-password .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* OTP Inputs */
+    #page-forgot-password .otp-container,
+    #page-verification .otp-container {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    #page-forgot-password .otp-input,
+    #page-verification .otp-input {
+      width: 44px;
+      height: 52px;
+      background: var(--input-bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      transition: var(--transition);
+      caret-color: var(--primary);
+      font-family: "Inter", sans-serif;
+    }
+
+    #page-forgot-password .otp-input:focus,
+    #page-verification .otp-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(43, 110, 240, 0.15);
+    }
+
+    #page-forgot-password .otp-input.filled,
+    #page-verification .otp-input.filled {
+      border-color: var(--primary);
+      background: rgba(43, 110, 240, 0.05);
+    }
+
+    #page-forgot-password .resend-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #page-forgot-password .resend-link {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: opacity 0.2s;
+      font-family: "Inter", sans-serif;
+    }
+
+    #page-forgot-password .resend-link:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      color: var(--text-muted);
+    }
+
+    #page-forgot-password .btn-primary {
+      width: 100%;
+      padding: 1rem;
+      background: var(--primary);
+      color: var(--primary-fg);
+      border: none;
+      border-radius: 12px;
+      font-family: "Inter", sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    #page-forgot-password .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(43, 110, 240, 0.3);
+    }
+
+    #page-forgot-password .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #page-forgot-password .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--primary-fg);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: fp-spin 0.8s linear infinite;
+      display: none;
+    }
+
+    #page-forgot-password .btn-primary.loading .spinner {
+      display: block;
+    }
+    #page-forgot-password .btn-primary.loading .btn-text {
+      display: none;
+    }
+
+    @keyframes fp-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ============================================================
+       VERIFICATION PAGE
+       ============================================================ */
+    #page-verification {
+      min-height: 100vh;
+      display: none;
+      background: var(--bg);
+      padding: 1.5rem 1rem;
+    }
+
+    #page-verification.verif-visible {
+      display: block;
+    }
+
+    #page-verification .app-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    #page-verification .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    #page-verification .back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      font-family: "Inter", sans-serif;
+    }
+
+    #page-verification .page-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-heading);
+    }
+
+    #page-verification .theme-toggle {
+      width: 40px;
+      height: 40px;
+      background: var(--card-bg-alt);
+      border: 1px solid var(--card-border-alt);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      transition: var(--transition);
+    }
+
+    #page-verification .theme-toggle:hover {
+      transform: scale(1.05);
+    }
+
+    #page-verification .card {
+      background: var(--card-bg-alt);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border-alt);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    #page-verification .section-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #page-verification .section-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    #page-verification .resend-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #page-verification .resend-link {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: opacity 0.2s;
+      font-family: "Inter", sans-serif;
+    }
+
+    #page-verification .resend-link:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      color: var(--text-muted);
+    }
+
+    #page-verification .btn-primary {
+      width: 100%;
+      padding: 1rem;
+      background: var(--primary);
+      color: var(--primary-fg);
+      border: none;
+      border-radius: 12px;
+      font-family: "Inter", sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    #page-verification .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(43, 110, 240, 0.3);
+    }
+
+    #page-verification .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #page-verification .btn-primary.loading .spinner {
+      display: block;
+    }
+    #page-verification .btn-primary.loading .btn-text {
+      display: none;
+    }
+
+    #page-verification .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--primary-fg);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: verif-spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes verif-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 400px) {
+      #page-forgot-password .otp-input,
+      #page-verification .otp-input {
+        width: 38px;
+        height: 48px;
+        font-size: 1.1rem;
+      }
+    }
+
+    /* ============================================================
+       DASHBOARD PAGE
+       ============================================================ */
+    #page-dashboard {
+      min-height: 100vh;
+      display: none;
+      background: var(--bg);
+      padding: 1.5rem 1rem;
+      transition: background 0.3s ease;
+    }
+
+    #page-dashboard.dash-visible {
+      display: block;
+    }
+
+    #page-dashboard .dashboard-wrapper {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding-bottom: 2rem;
+    }
+
+    #page-dashboard .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    #page-dashboard .logo {
+      font-family: "Dancing Script", cursive;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    [data-theme="dark"] #page-dashboard .logo {
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    [data-theme="light"] #page-dashboard .logo {
+      background: linear-gradient(90deg, #1e3a8a, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #page-dashboard .theme-toggle {
+      width: 40px;
+      height: 40px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      transition: var(--transition);
+    }
+
+    #page-dashboard .theme-toggle:hover {
+      transform: scale(1.05);
+    }
+
+    #page-dashboard .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    #page-dashboard .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+
+    #page-dashboard .balance-display {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      margin-bottom: 0.5rem;
+    }
+
+    #page-dashboard .sub-balance {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    #page-dashboard .package-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    #page-dashboard .package-tag {
+      background: var(--primary);
+      color: var(--primary-fg);
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    #page-dashboard .daily-limit {
+      margin-bottom: 1rem;
+    }
+
+    #page-dashboard .limit-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    #page-dashboard .limit-bar-bg {
+      height: 6px;
+      background: var(--card-border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    #page-dashboard .limit-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 40%;
+      transition: width 0.5s ease;
+    }
+
+    #page-dashboard .health-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    #page-dashboard .health-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--profit);
+      box-shadow: 0 0 8px var(--profit);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    #page-dashboard .health-dot.yellow {
+      background: var(--warning-text);
+      box-shadow: 0 0 8px var(--warning-text);
+    }
+    #page-dashboard .health-dot.red {
+      background: var(--danger-text);
+      box-shadow: 0 0 8px var(--danger-text);
+    }
+
+    #page-dashboard .health-text {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    #page-dashboard .health-tooltip {
+      position: absolute;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 0.75rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      width: 220px;
+      box-shadow: var(--shadow);
+      z-index: 50;
+      display: none;
+      line-height: 1.4;
+      top: 100%;
+      left: 0;
+      margin-top: 8px;
+    }
+
+    #page-dashboard .health-tooltip.visible {
+      display: block;
+      animation: dashFadeIn 0.2s ease;
+    }
+
+    @keyframes dashFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #page-dashboard .controls-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    #page-dashboard .btn-control {
+      flex: 1;
+      padding: 0.9rem;
+      border: none;
+      border-radius: 12px;
+      font-family: "Inter", sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    #page-dashboard .btn-start {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: white;
+    }
+    #page-dashboard .btn-start:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+    #page-dashboard .btn-stop {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+    }
+    #page-dashboard .btn-stop:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    #page-dashboard .btn-control:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    #page-dashboard .mode-selector {
+      display: flex;
+      background: var(--card-border);
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+
+    #page-dashboard .mode-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: "Inter", sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+
+    #page-dashboard .mode-btn.active {
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #page-dashboard .mode-params {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    #page-dashboard .param-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    #page-dashboard .param-input {
+      width: 60px;
+      padding: 0.4rem;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      color: var(--text);
+      text-align: center;
+      font-family: "Inter", sans-serif;
+    }
+
+    #page-dashboard .risk-slider {
+      width: 100%;
+      margin-top: 0.5rem;
+      accent-color: var(--primary);
+    }
+
+    #page-dashboard .short-term-info {
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    #page-dashboard .short-term-info.visible {
+      display: block;
+    }
+
+    #page-dashboard .trades-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    #page-dashboard .trades-table th {
+      text-align: left;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    #page-dashboard .trades-table td {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    #page-dashboard .trades-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    #page-dashboard .pnl-profit {
+      color: var(--profit);
+      font-weight: 600;
+    }
+    #page-dashboard .pnl-loss {
+      color: var(--loss);
+      font-weight: 600;
+    }
+
+    #page-dashboard .see-all-link {
+      display: block;
+      text-align: right;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--primary);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    #page-dashboard .performance-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    #page-dashboard .today-pnl {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    #page-dashboard .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    #page-dashboard .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.75rem 0.5rem;
+      background: var(--bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: "Inter", sans-serif;
+    }
+
+    #page-dashboard .action-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    #page-dashboard .action-icon {
+      font-size: 1.2rem;
+    }
+
+    #page-dashboard .warning-banner {
+      padding: 0.75rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #page-dashboard .warning-banner.visible {
+      display: flex;
+    }
+    #page-dashboard .warning-banner.cooldown {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--warning-text);
+    }
+    #page-dashboard .warning-banner.error {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger-text);
+    }
+
+    #page-dashboard .upgrade-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #page-dashboard .btn-outline {
+      padding: 0.6rem 1.2rem;
+      background: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      border-radius: 10px;
+      font-family: "Inter", sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    #page-dashboard .btn-outline:hover {
+      background: var(--primary);
+      color: var(--primary-fg);
+    }
+
+    #page-dashboard .spinner-btn {
+      width: 18px;
+      height: 18px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: dash-spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes dash-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 480px) {
+      #page-dashboard .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="splash-container" id="splashContainer">
-    <div class="scan-line" id="scanLine"></div>
-    <div class="micro-dot left-dot" id="leftDot"></div>
-    <div class="micro-dot right-dot" id="rightDot"></div>
-    <div id="particlesContainer"></div>
+  <div id="app">
 
-    <div class="title-wrapper">
-      <h1 class="futures-title" id="futuresTitle" aria-label="FUTURES">
-        <span class="futures-letter" data-delay="0">F</span>
-        <span class="futures-letter" data-delay="70">U</span>
-        <span class="futures-letter" data-delay="140">T</span>
-        <span class="futures-letter" data-delay="210">U</span>
-        <span class="futures-letter" data-delay="280">R</span>
-        <span class="futures-letter" data-delay="350">E</span>
-        <span class="futures-letter" data-delay="420">S</span>
-      </h1>
+    <!-- ============================================================
+    PAGE: SPLASH
+    ============================================================ -->
+    <div id="page-splash" class="page-section">
+      <div class="splash-container" id="splashContainer">
+        <div class="scan-line" id="scanLine"></div>
+        <div class="micro-dot left-dot" id="leftDot"></div>
+        <div class="micro-dot right-dot" id="rightDot"></div>
+        <div id="particlesContainer"></div>
+
+        <div class="title-wrapper">
+          <h1 class="futures-title" id="futuresTitle" aria-label="FUTURES">
+            <span class="futures-letter" data-delay="0">F</span>
+            <span class="futures-letter" data-delay="70">U</span>
+            <span class="futures-letter" data-delay="140">T</span>
+            <span class="futures-letter" data-delay="210">U</span>
+            <span class="futures-letter" data-delay="280">R</span>
+            <span class="futures-letter" data-delay="350">E</span>
+            <span class="futures-letter" data-delay="420">S</span>
+          </h1>
+        </div>
+
+        <p class="motto" id="motto">PRICE IS THE ONLY INDICATOR</p>
+        <p class="tap-hint" id="tapHint">TAP TO CONTINUE</p>
+      </div>
     </div>
 
-    <p class="motto" id="motto">PRICE IS THE ONLY INDICATOR</p>
+    <!-- ============================================================
+    PAGE: SIGN IN
+    ============================================================ -->
+    <div id="page-sign" class="page-section">
+      <div class="card">
+        <div class="logo">
+          <h1>FUTURES</h1>
+          <p>Price is the only Indicator</p>
+        </div>
+        <form id="loginForm">
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" placeholder="trader@example.com" required />
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" required minlength="6" />
+          </div>
+          <div class="forgot">
+            <a onclick="showPage('page-forgot-password')">Forgot password?</a>
+          </div>
+          <p class="error" id="loginError"></p>
+          <button type="submit" class="btn" id="loginBtn">Login</button>
+          <div class="footer">
+            Don't have an account? <a onclick="showPage('page-signup')">Create new account</a>
+          </div>
+        </form>
+      </div>
+    </div>
 
-    <p class="tap-hint" id="tapHint">TAP TO CONTINUE</p>
-  </div>
+    <!-- ============================================================
+    PAGE: SIGN UP
+    ============================================================ -->
+    <div id="page-signup" class="page-section">
+      <div class="card">
+        <div class="logo">
+          <h1>FUTURES</h1>
+          <p>Price is the only Indicator</p>
+        </div>
+        <form id="signupForm">
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" id="suName" placeholder="Future Trader" required />
+          </div>
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" id="suEmail" placeholder="trader@example.com" required />
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="suPassword" placeholder="Min. 6 characters" required minlength="6" />
+          </div>
+          <div class="field">
+            <label>Confirm Password</label>
+            <input type="password" id="suConfirmPassword" placeholder="••••••••" required minlength="6" />
+          </div>
+          <p class="error" id="signupError"></p>
+          <p class="success" id="signupSuccess"></p>
+          <button type="submit" class="btn" id="signupBtn">Create Account</button>
+          <div class="footer">
+            Already have an account? <a onclick="showPage('page-sign')">Login</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================================
+    PAGE: FORGOT PASSWORD
+    ============================================================ -->
+    <div id="page-forgot-password" class="page-section">
+      <div class="app-container">
+        <header class="header">
+          <button class="back-btn" onclick="showPage('page-sign')">← Back</button>
+          <h1 class="page-title">Reset Password</h1>
+          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="icon-moon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </header>
+
+        <div class="card">
+          <div id="fp-step1">
+            <div class="step-indicator">
+              <div class="step-dot active"></div>
+              <div class="step-dot"></div>
+              <div class="step-dot"></div>
+            </div>
+            <p class="instruction-text">Enter your email address. We'll send you a 6-digit code to reset your password.</p>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" id="resetEmail" placeholder="trader@example.com" />
+            </div>
+            <button class="btn-primary" onclick="fpHandleSendCode()">
+              <span class="spinner"></span>
+              <span class="btn-text">Send Code</span>
+            </button>
+          </div>
+
+          <div id="fp-step2" class="hidden">
+            <div class="step-indicator">
+              <div class="step-dot active"></div>
+              <div class="step-dot active"></div>
+              <div class="step-dot"></div>
+            </div>
+            <p class="instruction-text">We've sent a 6-digit code to <strong id="fpEmailDisplay"></strong>. Please check your inbox and spam folder.</p>
+
+            <div class="otp-container" id="fpOtpContainer">
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="0" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="1" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="2" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="3" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="4" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="5" />
+            </div>
+
+            <div class="resend-row">
+              <button class="resend-link" id="fpResendBtn" onclick="fpHandleResendCode()">Resend Code <span id="fpOtpTimer">(60s)</span></button>
+            </div>
+
+            <button class="btn-primary" id="fpVerifyBtn" onclick="fpHandleVerifyCode()" disabled>
+              <span class="spinner"></span>
+              <span class="btn-text">Verify Code</span>
+            </button>
+          </div>
+
+          <div id="fp-step3" class="hidden">
+            <div class="step-indicator">
+              <div class="step-dot active"></div>
+              <div class="step-dot active"></div>
+              <div class="step-dot active"></div>
+            </div>
+            <p class="instruction-text">Code verified. Enter your new password below.</p>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-input" id="fpNewPassword" placeholder="Min. 6 characters" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-input" id="fpConfirmPassword" placeholder="••••••••" />
+            </div>
+            <button class="btn-primary" onclick="fpHandleUpdatePassword()">
+              <span class="spinner"></span>
+              <span class="btn-text">Update Password</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+    PAGE: VERIFICATION
+    ============================================================ -->
+    <div id="page-verification" class="page-section">
+      <div class="app-container">
+        <header class="header">
+          <button class="back-btn" onclick="showPage('page-signup')">← Back</button>
+          <h1 class="page-title">Verify Account</h1>
+          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="icon-moon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </header>
+
+        <main>
+          <div class="card" id="verifEmailSection">
+            <div class="section-title">📧 Email Verification</div>
+            <p class="section-desc">
+              We've sent a 6-digit code to your email. Please check your inbox (and spam folder) and enter the code below.
+            </p>
+            <div class="otp-container" id="verifOtpContainer">
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="0" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="1" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="2" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="3" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="4" />
+              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="5" />
+            </div>
+            <div class="resend-row">
+              <button class="resend-link" id="verifResendBtn" onclick="verifHandleResend()">Resend Code <span id="verifTimer">(60s)</span></button>
+            </div>
+            <button class="btn-primary" id="verifVerifyBtn" onclick="verifHandleVerify()" disabled>
+              <span class="spinner"></span>
+              <span class="btn-text">Verify & Continue</span>
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- ============================================================
+    PAGE: DASHBOARD
+    ============================================================ -->
+    <div id="page-dashboard" class="page-section">
+      <div class="dashboard-wrapper">
+        <div class="header">
+          <h1 class="logo">FUTURES</h1>
+          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          </button>
+        </div>
+
+        <div class="card" id="accountCard">
+          <div class="balance-display" id="balanceDisplay">$1,234.56</div>
+          <div class="sub-balance">
+            <span>Equity: <strong id="equityDisplay">$1,250.00</strong></span>
+            <span>Margin: <strong id="marginDisplay">$1,200.00</strong></span>
+          </div>
+          <div class="package-row">
+            <span><span class="package-tag" id="packageTag">SPARK</span> Trades left: <strong id="tradesLeft">5</strong></span>
+          </div>
+          <div class="daily-limit">
+            <div class="limit-label">
+              <span>Daily used</span>
+              <span id="dailyLimitText">2 / 5</span>
+            </div>
+            <div class="limit-bar-bg">
+              <div class="limit-bar-fill" id="dailyLimitBar" style="width: 40%;"></div>
+            </div>
+          </div>
+          <div class="health-row" id="healthTrigger">
+            <div class="health-dot" id="healthDot"></div>
+            <span class="health-text" id="healthText">Bot Active</span>
+            <div class="health-tooltip" id="healthTooltip">All systems normal. MT5 connected, no news impact, bot ready.</div>
+          </div>
+        </div>
+
+        <div class="card" id="controlCard">
+          <div class="controls-row">
+            <button class="btn-control btn-start" id="dashBtnStart">▶ START BOT</button>
+            <button class="btn-control btn-stop" id="dashBtnStop" disabled>⏹ STOP BOT</button>
+          </div>
+          <div class="mode-selector">
+            <button class="mode-btn active" data-mode="long">Long-term</button>
+            <button class="mode-btn" data-mode="short">Short-term</button>
+          </div>
+          <div class="mode-params" id="dashModeParams">
+            <div class="param-row" id="dashTradeCountRow">
+              <span>Number of trades</span>
+              <input type="number" class="param-input" id="dashTradeCountInput" value="1" min="1" max="5" />
+            </div>
+            <div class="param-row">
+              <span>Risk %</span>
+              <span id="dashRiskValue">5%</span>
+            </div>
+            <input type="range" class="risk-slider" id="dashRiskSlider" min="1" max="10" step="0.5" value="5" />
+          </div>
+          <div class="short-term-info" id="dashShortTermInfo">
+            One trade will be executed, then bot stops. Adjust risk as needed.
+          </div>
+        </div>
+
+        <div class="card" id="tradesCard">
+          <div class="card-title">📋 Recent Trades</div>
+          <table class="trades-table">
+            <thead>
+              <tr><th>Pair</th><th>Type</th><th>P&L</th><th>Time</th></tr>
+            </thead>
+            <tbody id="dashTradesBody">
+              <tr><td>GBPUSD</td><td>BUY</td><td class="pnl-profit">+$12.30</td><td>14:32</td></tr>
+              <tr><td>GBPJPY</td><td>SELL</td><td class="pnl-loss">-$5.20</td><td>13:15</td></tr>
+              <tr><td>GBPUSD</td><td>BUY</td><td class="pnl-profit">+$8.40</td><td>11:07</td></tr>
+            </tbody>
+          </table>
+          <span class="see-all-link" id="dashSeeAllTrades">See all →</span>
+        </div>
+
+        <div class="card" id="performanceCard">
+          <div class="performance-row">
+            <span class="card-title" style="margin:0;">Today's P&L</span>
+            <span class="today-pnl pnl-profit" id="dashTodayPnl">+$15.50</span>
+          </div>
+          <div class="actions-grid">
+            <button class="action-btn" id="dashBtnChat"><span class="action-icon">💬</span>Chat</button>
+            <button class="action-btn" id="dashBtnHistory"><span class="action-icon">📖</span>History</button>
+            <button class="action-btn" id="dashBtnSettings"><span class="action-icon">⚙️</span>Settings</button>
+            <button class="action-btn" id="dashBtnSupport"><span class="action-icon">🆘</span>Support</button>
+          </div>
+          <div class="warning-banner cooldown" id="dashWarningBanner">
+            ⚠️ Bot paused due to 3 consecutive losses (cooldown 24h).
+          </div>
+        </div>
+
+        <div class="card" id="subscriptionCard">
+          <div class="upgrade-row">
+            <span style="font-size:0.9rem; font-weight:600;">Need more trades?</span>
+            <button class="btn-outline" id="dashBtnBuyTrades">Buy More Trades</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#app -->
+
+  <div class="toast-global" id="toastGlobal"></div>
 
   <script>
     (function () {
       "use strict";
 
-      const container = document.getElementById("splashContainer");
-      const letters = document.querySelectorAll(".futures-letter");
-      const mottoEl = document.getElementById("motto");
-      const scanLine = document.getElementById("scanLine");
-      const leftDot = document.getElementById("leftDot");
-      const rightDot = document.getElementById("rightDot");
-      const titleEl = document.getElementById("futuresTitle");
-      const tapHint = document.getElementById("tapHint");
-      const particlesContainer = document.getElementById("particlesContainer");
+      /* ============================================================
+         GLOBALS
+         ============================================================ */
+      let supabase = null;
+      const pageInitFlags = {};
 
-      let hasAnimated = false;
-      let soundPlayed = false;
-
-      const cashOutAudio = new Audio("cashout.mp3");
-      cashOutAudio.volume = 0.65;
-      cashOutAudio.preload = "auto";
-
-      function playCashOutSound() {
-        cashOutAudio.currentTime = 0;
-        cashOutAudio.play().catch(function (err) {
-          console.warn("Audio play blocked:", err);
-        });
-      }
-
-      function navigateToNext() {
-        container.classList.add("fade-out");
-        setTimeout(function () {
-          window.location.href = "/sign";
-        }, 600);
-      }
-
-      function animateLetters() {
-        letters.forEach(function (letterEl) {
-          const delay = parseInt(letterEl.getAttribute("data-delay"), 10);
-          setTimeout(function () {
-            letterEl.classList.add("visible");
-          }, delay);
-        });
-      }
-
-      function startBreathing() {
-        titleEl.classList.add("breathing");
-      }
-
-      function revealMotto() {
-        mottoEl.classList.add("visible");
-      }
-
-      function triggerDecorations() {
-        scanLine.classList.add("animate");
-        leftDot.classList.add("animate");
-        rightDot.classList.add("animate");
-        spawnParticles();
-      }
-
-      function spawnParticles() {
-        const count = 8;
-        for (let i = 0; i < count; i++) {
-          const particle = document.createElement("div");
-          particle.className = "particle";
-          particle.style.left = 20 + Math.random() * 60 + "%";
-          particle.style.top = 35 + Math.random() * 30 + "%";
-          particle.style.animationDelay = 1.2 + Math.random() * 1.5 + "s";
-          particlesContainer.appendChild(particle);
-
-          requestAnimationFrame(function () {
-            particle.classList.add("animate");
-          });
-
-          setTimeout(function () {
-            if (particle.parentNode) particle.parentNode.removeChild(particle);
-          }, 5000);
+      /* ============================================================
+         SUPABASE INIT (once globally)
+         ============================================================ */
+      async function initSupabase() {
+        try {
+          const res = await fetch('/api/config');
+          const config = await res.json();
+          supabase = window.supabase.createClient(config.supabase_url, config.supabase_key);
+        } catch (e) {
+          console.error('Supabase init error:', e);
         }
       }
 
-      function showTapHint() {
+      /* ============================================================
+         GLOBAL TOAST
+         ============================================================ */
+      function showGlobalToast(msg, type) {
+        var toast = document.getElementById('toastGlobal');
+        toast.textContent = msg;
+        toast.className = 'toast-global visible ' + (type || '');
         setTimeout(function () {
-          tapHint.classList.add("visible");
-        }, 1800);
+          toast.classList.remove('visible');
+        }, 3000);
       }
 
-      function startAnimation() {
-        if (hasAnimated) return;
-        hasAnimated = true;
+      /* ============================================================
+         THEME TOGGLE
+         ============================================================ */
+      window.toggleTheme = function () {
+        var html = document.documentElement;
+        var isDark = html.getAttribute('data-theme') !== 'light';
+        html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        updateThemeIcons();
+      };
 
-        animateLetters();
-        setTimeout(triggerDecorations, 500);
-        setTimeout(revealMotto, 900);
-        setTimeout(startBreathing, 1000);
-        showTapHint();
+      function updateThemeIcons() {
+        var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+        document.querySelectorAll('.icon-sun').forEach(function (el) {
+          el.classList.toggle('hidden', isDark);
+        });
+        document.querySelectorAll('.icon-moon').forEach(function (el) {
+          el.classList.toggle('hidden', !isDark);
+        });
       }
 
-      function handleTap() {
-        if (!hasAnimated) return;
-        if (soundPlayed) return;
-        soundPlayed = true;
+      /* ============================================================
+         PAGE NAVIGATION
+         ============================================================ */
+      window.showPage = function (pageId) {
+        document.querySelectorAll('.page-section').forEach(function (p) {
+          p.style.display = 'none';
+        });
+        var section = document.getElementById(pageId);
+        if (section) {
+          section.style.display = '';
+          // Call page init if available and not yet initialized
+          if (!pageInitFlags[pageId]) {
+            pageInitFlags[pageId] = true;
+            var initMap = {
+              'page-sign': initSignPage,
+              'page-signup': initSignupPage,
+              'page-forgot-password': initForgotPasswordPage,
+              'page-verification': initVerificationPage,
+              'page-dashboard': initDashboardPage
+            };
+            if (initMap[pageId]) initMap[pageId]();
+          }
+        }
+        updateThemeIcons();
+      };
 
-        tapHint.classList.remove("visible");
-        playCashOutSound();
+      /* ============================================================
+         LOAD EXTERNAL PAGE
+         ============================================================ */
+      window.loadPage = async function (pageId, htmlFile) {
+        document.querySelectorAll('.page-section').forEach(function (p) {
+          p.style.display = 'none';
+        });
+        var section = document.getElementById(pageId);
+        if (!section) {
+          try {
+            var resp = await fetch(htmlFile);
+            var html = await resp.text();
+            var styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+            if (styleMatch) {
+              var styleTag = document.createElement('style');
+              styleTag.id = pageId + '-style';
+              styleTag.textContent = styleMatch.map(function(s) {
+                return s.replace(/<\/?style[^>]*>/gi, '');
+              }).join('\n');
+              document.head.appendChild(styleTag);
+            }
+            var match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+            section = document.createElement('div');
+            section.id = pageId;
+            section.className = 'page-section';
+            section.innerHTML = match ? match[1] : html;
+            document.getElementById('app').appendChild(section);
+            section.querySelectorAll('script').forEach(function (oldScript) {
+              var newScript = document.createElement('script');
+              Array.from(oldScript.attributes).forEach(function (attr) {
+                newScript.setAttribute(attr.name, attr.value);
+              });
+              newScript.textContent = oldScript.textContent;
+              oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+          } catch (e) {
+            console.error('Failed to load page:', htmlFile, e);
+            showGlobalToast('Failed to load page: ' + htmlFile, 'error');
+            return;
+          }
+        }
+        section.style.display = '';
+        updateThemeIcons();
+      };
 
-        setTimeout(navigateToNext, 900);
+      /* ============================================================
+         SPLASH PAGE
+         ============================================================ */
+      function initSplashPage() {
+        var container = document.getElementById("splashContainer");
+        var letters = document.querySelectorAll("#page-splash .futures-letter");
+        var mottoEl = document.getElementById("motto");
+        var scanLine = document.getElementById("scanLine");
+        var leftDot = document.getElementById("leftDot");
+        var rightDot = document.getElementById("rightDot");
+        var titleEl = document.getElementById("futuresTitle");
+        var tapHint = document.getElementById("tapHint");
+        var particlesContainer = document.getElementById("particlesContainer");
+
+        var hasAnimated = false;
+        var soundPlayed = false;
+
+        var cashOutAudio = new Audio("cashout.mp3");
+        cashOutAudio.volume = 0.65;
+        cashOutAudio.preload = "auto";
+
+        function playCashOutSound() {
+          cashOutAudio.currentTime = 0;
+          cashOutAudio.play().catch(function (err) {
+            console.warn("Audio play blocked:", err);
+          });
+        }
+
+        function navigateToNext() {
+          container.classList.add("fade-out");
+          setTimeout(function () {
+            showPage('page-sign');
+          }, 600);
+        }
+
+        function animateLetters() {
+          letters.forEach(function (letterEl) {
+            var delay = parseInt(letterEl.getAttribute("data-delay"), 10);
+            setTimeout(function () {
+              letterEl.classList.add("visible");
+            }, delay);
+          });
+        }
+
+        function startBreathing() {
+          titleEl.classList.add("breathing");
+        }
+
+        function revealMotto() {
+          mottoEl.classList.add("visible");
+        }
+
+        function triggerDecorations() {
+          scanLine.classList.add("animate");
+          leftDot.classList.add("animate");
+          rightDot.classList.add("animate");
+          spawnParticles();
+        }
+
+        function spawnParticles() {
+          var count = 8;
+          for (var i = 0; i < count; i++) {
+            var particle = document.createElement("div");
+            particle.className = "particle";
+            particle.style.left = 20 + Math.random() * 60 + "%";
+            particle.style.top = 35 + Math.random() * 30 + "%";
+            particle.style.animationDelay = 1.2 + Math.random() * 1.5 + "s";
+            particlesContainer.appendChild(particle);
+
+            requestAnimationFrame(function () {
+              particle.classList.add("animate");
+            });
+
+            setTimeout(function () {
+              if (particle.parentNode) particle.parentNode.removeChild(particle);
+            }, 5000);
+          }
+        }
+
+        function showTapHint() {
+          setTimeout(function () {
+            tapHint.classList.add("visible");
+          }, 1800);
+        }
+
+        function startAnimation() {
+          if (hasAnimated) return;
+          hasAnimated = true;
+          animateLetters();
+          setTimeout(triggerDecorations, 500);
+          setTimeout(revealMotto, 900);
+          setTimeout(startBreathing, 1000);
+          showTapHint();
+        }
+
+        function handleTap() {
+          if (!hasAnimated) return;
+          if (soundPlayed) return;
+          soundPlayed = true;
+          tapHint.classList.remove("visible");
+          playCashOutSound();
+          setTimeout(navigateToNext, 900);
+        }
+
+        container.addEventListener("click", handleTap);
+        container.addEventListener("touchstart", handleTap);
+
+        window.addEventListener("load", function () {
+          startAnimation();
+        });
+
+        // If splash is shown after load, start animation immediately
+        if (document.readyState === 'complete') {
+          startAnimation();
+        } else {
+          // The load listener above handles it
+        }
+
+        window.addEventListener("beforeunload", function () {
+          cashOutAudio.pause();
+          cashOutAudio.src = "";
+        });
       }
 
-      container.addEventListener("click", handleTap);
-      container.addEventListener("touchstart", handleTap);
+      /* ============================================================
+         SIGN PAGE
+         ============================================================ */
+      function initSignPage() {
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          var email = document.getElementById('loginEmail').value;
+          var password = document.getElementById('loginPassword').value;
+          var errorEl = document.getElementById('loginError');
+          var btn = document.getElementById('loginBtn');
+          if (!supabase) {
+            errorEl.textContent = 'Connecting... please retry.';
+            return;
+          }
+          btn.disabled = true;
+          btn.textContent = 'Logging in...';
+          errorEl.textContent = '';
+          try {
+            var result = await supabase.auth.signInWithPassword({ email: email, password: password });
+            if (result.error) {
+              errorEl.textContent = result.error.message;
+              btn.disabled = false;
+              btn.textContent = 'Login';
+              return;
+            }
+            showPage('page-dashboard');
+          } catch (err) {
+            errorEl.textContent = err.message || 'Login failed';
+            btn.disabled = false;
+            btn.textContent = 'Login';
+          }
+        });
+      }
 
-      window.addEventListener("load", function () {
-        startAnimation();
-      });
+      /* ============================================================
+         SIGNUP PAGE
+         ============================================================ */
+      function initSignupPage() {
+        document.getElementById('signupForm').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          var name = document.getElementById('suName').value;
+          var email = document.getElementById('suEmail').value;
+          var password = document.getElementById('suPassword').value;
+          var confirm = document.getElementById('suConfirmPassword').value;
+          var errorEl = document.getElementById('signupError');
+          var successEl = document.getElementById('signupSuccess');
+          var btn = document.getElementById('signupBtn');
+          errorEl.textContent = '';
+          successEl.textContent = '';
+          if (password !== confirm) {
+            errorEl.textContent = 'Passwords do not match.';
+            return;
+          }
+          if (!supabase) {
+            errorEl.textContent = 'Connecting... please retry.';
+            return;
+          }
+          btn.disabled = true;
+          btn.textContent = 'Creating account...';
+          try {
+            var result = await supabase.auth.signUp({
+              email: email,
+              password: password,
+              options: { data: { display_name: name } }
+            });
+            if (result.error) {
+              errorEl.textContent = result.error.message;
+              btn.disabled = false;
+              btn.textContent = 'Create Account';
+              return;
+            }
+            if (result.data && result.data.user && result.data.user.identities && result.data.user.identities.length === 0) {
+              errorEl.textContent = 'An account with this email already exists.';
+              btn.disabled = false;
+              btn.textContent = 'Create Account';
+              return;
+            }
+            successEl.textContent = 'Account created! Check your email for confirmation.';
+            btn.textContent = 'Account created!';
+            setTimeout(function () {
+              showPage('page-verification');
+            }, 2000);
+          } catch (err) {
+            errorEl.textContent = err.message || 'Signup failed';
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+          }
+        });
+      }
 
-      window.addEventListener("beforeunload", function () {
-        cashOutAudio.pause();
-        cashOutAudio.src = "";
-      });
+      /* ============================================================
+         FORGOT PASSWORD PAGE
+         ============================================================ */
+      var fpState = {
+        email: '',
+        otpTimer: 60,
+        timerInterval: null
+      };
+
+      function initForgotPasswordPage() {
+        var otpInputs = document.querySelectorAll('#fpOtpContainer .otp-input');
+        var verifyBtn = document.getElementById('fpVerifyBtn');
+
+        otpInputs.forEach(function (input, index) {
+          input.addEventListener('input', function (e) {
+            var val = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = val;
+            if (val) {
+              e.target.classList.add('filled');
+              if (index < otpInputs.length - 1) otpInputs[index + 1].focus();
+            } else {
+              e.target.classList.remove('filled');
+            }
+            fpCheckOtpComplete();
+          });
+
+          input.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+              otpInputs[index - 1].focus();
+              otpInputs[index - 1].value = '';
+              otpInputs[index - 1].classList.remove('filled');
+              fpCheckOtpComplete();
+            }
+          });
+
+          input.addEventListener('paste', function (e) {
+            e.preventDefault();
+            var pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+            pasteData.split('').forEach(function (char, i) {
+              if (otpInputs[i]) {
+                otpInputs[i].value = char;
+                otpInputs[i].classList.add('filled');
+              }
+            });
+            if (pasteData.length > 0) {
+              var focusIndex = Math.min(pasteData.length, otpInputs.length - 1);
+              otpInputs[focusIndex].focus();
+            }
+            fpCheckOtpComplete();
+          });
+        });
+
+        fpCheckOtpComplete();
+      }
+
+      function fpGetOtpValue() {
+        var inputs = document.querySelectorAll('#fpOtpContainer .otp-input');
+        return Array.from(inputs).map(function (i) { return i.value; }).join('');
+      }
+
+      function fpCheckOtpComplete() {
+        var otp = fpGetOtpValue();
+        document.getElementById('fpVerifyBtn').disabled = otp.length !== 6;
+      }
+
+      function fpClearOtpInputs() {
+        var inputs = document.querySelectorAll('#fpOtpContainer .otp-input');
+        inputs.forEach(function (i) { i.value = '';
+          i.classList.remove('filled'); });
+        if (inputs[0]) inputs[0].focus();
+        fpCheckOtpComplete();
+      }
+
+      function fpStartTimer() {
+        fpState.otpTimer = 60;
+        document.getElementById('fpResendBtn').disabled = true;
+        document.getElementById('fpOtpTimer').textContent = '(60s)';
+        clearInterval(fpState.timerInterval);
+        fpState.timerInterval = setInterval(function () {
+          fpState.otpTimer--;
+          document.getElementById('fpOtpTimer').textContent = '(' + fpState.otpTimer + 's)';
+          if (fpState.otpTimer <= 0) {
+            clearInterval(fpState.timerInterval);
+            document.getElementById('fpResendBtn').disabled = false;
+            document.getElementById('fpOtpTimer').textContent = '';
+          }
+        }, 1000);
+      }
+
+      window.fpHandleSendCode = async function () {
+        var email = document.getElementById('resetEmail').value.trim();
+        if (!email || !email.includes('@')) {
+          showGlobalToast('Please enter a valid email.', 'error');
+          return;
+        }
+        var btn = document.querySelector('#fp-step1 .btn-primary');
+        btn.classList.add('loading');
+        btn.disabled = true;
+        try {
+          // Mock: simulate API call
+          await new Promise(function (r) { return setTimeout(r, 1500); });
+          fpState.email = email;
+          document.getElementById('fpEmailDisplay').textContent = email;
+          document.getElementById('fp-step1').classList.add('hidden');
+          document.getElementById('fp-step2').classList.remove('hidden');
+          fpStartTimer();
+          var firstOtp = document.querySelector('#fpOtpContainer .otp-input');
+          if (firstOtp) firstOtp.focus();
+          showGlobalToast('Code sent to your email!', 'success');
+        } catch (err) {
+          showGlobalToast('Failed to send code. Try again.', 'error');
+        } finally {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+      };
+
+      window.fpHandleResendCode = function () {
+        showGlobalToast('Sending new code...', 'success');
+        fpStartTimer();
+      };
+
+      window.fpHandleVerifyCode = async function () {
+        var otp = fpGetOtpValue();
+        if (otp.length !== 6) return;
+        var btn = document.getElementById('fpVerifyBtn');
+        btn.disabled = true;
+        btn.classList.add('loading');
+        try {
+          await new Promise(function (r) { return setTimeout(r, 1500); });
+          document.getElementById('fp-step2').classList.add('hidden');
+          document.getElementById('fp-step3').classList.remove('hidden');
+          showGlobalToast('Code verified!', 'success');
+        } catch (err) {
+          showGlobalToast('Invalid code. Try again.', 'error');
+          fpClearOtpInputs();
+        } finally {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+      };
+
+      window.fpHandleUpdatePassword = async function () {
+        var pw = document.getElementById('fpNewPassword').value;
+        var cpw = document.getElementById('fpConfirmPassword').value;
+        if (!pw || pw.length < 6) {
+          showGlobalToast('Password must be at least 6 chars.', 'error');
+          return;
+        }
+        if (pw !== cpw) {
+          showGlobalToast('Passwords do not match.', 'error');
+          return;
+        }
+        var btn = document.querySelector('#fp-step3 .btn-primary');
+        btn.classList.add('loading');
+        btn.disabled = true;
+        try {
+          await new Promise(function (r) { return setTimeout(r, 1500); });
+          showGlobalToast('Password updated successfully!', 'success');
+          setTimeout(function () {
+            showPage('page-sign');
+          }, 1000);
+        } catch (err) {
+          showGlobalToast('Update failed. Please try again.', 'error');
+        } finally {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+      };
+
+      /* ============================================================
+         VERIFICATION PAGE (simplified – email only)
+         ============================================================ */
+      var verifState = {
+        timer: 60,
+        interval: null,
+        verified: false
+      };
+
+      function initVerificationPage() {
+        var otpInputs = document.querySelectorAll('#verifOtpContainer .otp-input');
+        var verifyBtn = document.getElementById('verifVerifyBtn');
+
+        otpInputs.forEach(function (input, index) {
+          input.addEventListener('input', function (e) {
+            var val = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = val;
+            if (val) {
+              e.target.classList.add('filled');
+              if (index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+              } else {
+                // Auto-trigger verify when all 6 digits entered
+                verifHandleVerify();
+              }
+            } else {
+              e.target.classList.remove('filled');
+            }
+            verifCheckComplete();
+          });
+
+          input.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+              otpInputs[index - 1].focus();
+              otpInputs[index - 1].value = '';
+              otpInputs[index - 1].classList.remove('filled');
+              verifCheckComplete();
+            }
+          });
+
+          input.addEventListener('paste', function (e) {
+            e.preventDefault();
+            var pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+            pasteData.split('').forEach(function (char, i) {
+              if (otpInputs[i]) {
+                otpInputs[i].value = char;
+                otpInputs[i].classList.add('filled');
+              }
+            });
+            if (pasteData.length > 0) {
+              var focusIndex = Math.min(pasteData.length, otpInputs.length - 1);
+              otpInputs[focusIndex].focus();
+            }
+            verifCheckComplete();
+            if (pasteData.length === 6) verifHandleVerify();
+          });
+        });
+
+        verifStartTimer();
+        verifCheckComplete();
+        var firstInput = document.querySelector('#verifOtpContainer .otp-input');
+        if (firstInput) firstInput.focus();
+      }
+
+      function verifGetOtpValue() {
+        var inputs = document.querySelectorAll('#verifOtpContainer .otp-input');
+        return Array.from(inputs).map(function (i) { return i.value; }).join('');
+      }
+
+      function verifCheckComplete() {
+        var otp = verifGetOtpValue();
+        document.getElementById('verifVerifyBtn').disabled = otp.length !== 6;
+      }
+
+      function verifStartTimer() {
+        verifState.timer = 60;
+        document.getElementById('verifResendBtn').disabled = true;
+        document.getElementById('verifTimer').textContent = '(60s)';
+        clearInterval(verifState.interval);
+        verifState.interval = setInterval(function () {
+          verifState.timer--;
+          document.getElementById('verifTimer').textContent = '(' + verifState.timer + 's)';
+          if (verifState.timer <= 0) {
+            clearInterval(verifState.interval);
+            document.getElementById('verifResendBtn').disabled = false;
+            document.getElementById('verifTimer').textContent = '';
+          }
+        }, 1000);
+      }
+
+      window.verifHandleResend = function () {
+        showGlobalToast('Sending new code...', 'success');
+        verifStartTimer();
+      };
+
+      window.verifHandleVerify = async function () {
+        if (verifState.verified) return;
+        var otp = verifGetOtpValue();
+        if (otp.length !== 6) return;
+        var btn = document.getElementById('verifVerifyBtn');
+        btn.disabled = true;
+        btn.classList.add('loading');
+        try {
+          await new Promise(function (r) { return setTimeout(r, 1500); });
+          verifState.verified = true;
+          showGlobalToast('✓ Email verified!', 'success');
+          btn.querySelector('.btn-text').textContent = '✓ Verified!';
+          btn.classList.remove('loading');
+          setTimeout(function () {
+            showPage('page-dashboard');
+          }, 1500);
+        } catch (err) {
+          showGlobalToast('Verification failed. Try again.', 'error');
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+      };
+
+      /* ============================================================
+         DASHBOARD PAGE
+         ============================================================ */
+      var dashState = {
+        botActive: false,
+        mode: 'long',
+        tradeCount: 1,
+        riskPercent: 5,
+        tradesRemaining: 5,
+        dailyUsed: 2,
+        health: 'green',
+        cooldown: false
+      };
+
+      function initDashboardPage() {
+        var modeBtns = document.querySelectorAll('#page-dashboard .mode-btn');
+        var tradeCountRow = document.getElementById('dashTradeCountRow');
+        var shortTermInfo = document.getElementById('dashShortTermInfo');
+        var riskSlider = document.getElementById('dashRiskSlider');
+        var riskValue = document.getElementById('dashRiskValue');
+        var btnStart = document.getElementById('dashBtnStart');
+        var btnStop = document.getElementById('dashBtnStop');
+        var healthTrigger = document.getElementById('healthTrigger');
+        var healthTooltip = document.getElementById('healthTooltip');
+        var tradeCountInput = document.getElementById('dashTradeCountInput');
+
+        // Mode Selector
+        modeBtns.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            modeBtns.forEach(function (b) { return b.classList.remove('active'); });
+            btn.classList.add('active');
+            dashState.mode = btn.dataset.mode;
+            updateDashModeUI();
+          });
+        });
+
+        function updateDashModeUI() {
+          if (dashState.mode === 'long') {
+            tradeCountRow.style.display = 'flex';
+            shortTermInfo.classList.remove('visible');
+          } else {
+            tradeCountRow.style.display = 'none';
+            shortTermInfo.classList.add('visible');
+          }
+          updateDashButtonStates();
+        }
+
+        // Risk Slider
+        riskSlider.addEventListener('input', function (e) {
+          dashState.riskPercent = parseFloat(e.target.value);
+          riskValue.textContent = dashState.riskPercent + '%';
+        });
+
+        tradeCountInput.addEventListener('change', function (e) {
+          var val = parseInt(e.target.value, 10);
+          if (val < 1) val = 1;
+          if (val > 5) val = 5;
+          dashState.tradeCount = val;
+          e.target.value = val;
+        });
+
+        // Health Tooltip
+        healthTrigger.addEventListener('click', function (e) {
+          healthTooltip.classList.toggle('visible');
+        });
+        document.addEventListener('click', function (e) {
+          if (!healthTrigger.contains(e.target)) healthTooltip.classList.remove('visible');
+        });
+
+        function updateDashButtonStates() {
+          var canStart = dashState.tradesRemaining > 0 && !dashState.botActive && !dashState.cooldown;
+          btnStart.disabled = !canStart;
+          btnStop.disabled = !dashState.botActive;
+          tradeCountInput.disabled = dashState.botActive;
+          riskSlider.disabled = dashState.botActive;
+        }
+
+        // Start Bot
+        btnStart.addEventListener('click', async function () {
+          if (dashState.botActive || dashState.tradesRemaining <= 0 || dashState.cooldown) return;
+          btnStart.innerHTML = '<span class="spinner-btn"></span> Starting...';
+          btnStart.disabled = true;
+          await new Promise(function (res) { return setTimeout(res, 1200); });
+          dashState.botActive = true;
+          updateDashButtonStates();
+          btnStart.innerHTML = '▶ START BOT';
+          setDashHealthState('green', 'Bot Running');
+          showGlobalToast('Bot started successfully!', 'success');
+        });
+
+        // Stop Bot
+        btnStop.addEventListener('click', async function () {
+          if (!dashState.botActive) return;
+          btnStop.innerHTML = '<span class="spinner-btn"></span> Stopping...';
+          btnStop.disabled = true;
+          await new Promise(function (res) { return setTimeout(res, 1000); });
+          dashState.botActive = false;
+          updateDashButtonStates();
+          btnStop.innerHTML = '⏹ STOP BOT';
+          setDashHealthState('green', 'Bot Active');
+          showGlobalToast('Bot stopped. All positions closed.', 'success');
+        });
+
+        function setDashHealthState(status, text) {
+          var dot = document.getElementById('healthDot');
+          var txt = document.getElementById('healthText');
+          dot.className = 'health-dot';
+          if (status === 'yellow') dot.classList.add('yellow');
+          if (status === 'red') dot.classList.add('red');
+          txt.textContent = text;
+          var msgs = {
+            green: 'All systems normal. MT5 connected, no news impact, bot ready.',
+            yellow: 'News after-effect active – trading with reduced risk (5% cap).',
+            red: 'MT5 disconnected – please reconnect in Settings.'
+          };
+          healthTooltip.textContent = msgs[status] || msgs.green;
+        }
+
+        // Navigation Buttons
+        document.getElementById('dashSeeAllTrades').addEventListener('click', function () {
+          loadPage('page-accountability', 'accountability.html');
+        });
+        document.getElementById('dashBtnChat').addEventListener('click', function () {
+          loadPage('page-copilot', 'copilot.html');
+        });
+        document.getElementById('dashBtnHistory').addEventListener('click', function () {
+          loadPage('page-accountability', 'accountability.html');
+        });
+        document.getElementById('dashBtnSettings').addEventListener('click', function () {
+          loadPage('page-settings', 'settings.html');
+        });
+        document.getElementById('dashBtnSupport').addEventListener('click', function () {
+          loadPage('page-support', 'support.html');
+        });
+        document.getElementById('dashBtnBuyTrades').addEventListener('click', function () {
+          alert('Coming soon');
+        });
+
+        // Initial state
+        updateDashModeUI();
+        updateDashButtonStates();
+      }
+
+      /* ============================================================
+         INIT ON LOAD
+         ============================================================ */
+      initSupabase();
+
+      // Show splash page by default
+      window.showPage('page-splash');
+
+      // Init splash page immediately (since it's always first)
+      initSplashPage();
+
     })();
   </script>
 </body>
