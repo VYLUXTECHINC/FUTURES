@@ -636,12 +636,6 @@
       #page-signup .logo h1 {
         font-size: 2.5rem;
       }
-      #page-forgot-password {
-        padding: 1rem;
-      }
-      #page-verification {
-        padding: 1rem;
-      }
       #page-dashboard.active {
         padding: 0.75rem;
       }
@@ -654,25 +648,29 @@
       min-height: 100vh;
       display: none;
       background: var(--bg);
-      padding: 1.5rem 1rem;
     }
 
     #page-forgot-password.fp-visible {
       display: block;
     }
 
-    #page-forgot-password .app-container {
+    #page-forgot-password .card {
       width: 100%;
-      max-width: 560px;
+      max-width: 480px;
       margin: 0 auto;
-      position: relative;
     }
 
-    #page-forgot-password .header {
+    #page-forgot-password .fp-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 1rem;
       margin-bottom: 1.5rem;
+    }
+
+    #page-forgot-password .page-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-heading);
     }
 
     #page-forgot-password .back-btn {
@@ -692,34 +690,6 @@
     }
     #page-forgot-password .back-btn:hover {
       background: var(--border);
-    }
-
-    #page-forgot-password .page-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text-heading);
-    }
-
-    #page-forgot-password .theme-toggle {
-      width: 40px;
-      height: 40px;
-      background: var(--card-bg-alt);
-      border: 1px solid var(--card-border-alt);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--text);
-      transition: var(--transition);
-    }
-
-    #page-forgot-password .theme-toggle:hover {
-      transform: scale(1.05);
-    }
-
-    #page-forgot-password .card {
-      padding: 0;
     }
 
     #page-forgot-password .step-indicator {
@@ -901,25 +871,29 @@
       min-height: 100vh;
       display: none;
       background: var(--bg);
-      padding: 1.5rem 1rem;
     }
 
     #page-verification.verif-visible {
       display: block;
     }
 
-    #page-verification .app-container {
+    #page-verification .card {
       width: 100%;
-      max-width: 560px;
+      max-width: 480px;
       margin: 0 auto;
-      position: relative;
     }
 
-    #page-verification .header {
+    #page-verification .fp-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 1rem;
       margin-bottom: 1.5rem;
+    }
+
+    #page-verification .page-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-heading);
     }
 
     #page-verification .back-btn {
@@ -939,34 +913,6 @@
     }
     #page-verification .back-btn:hover {
       background: var(--border);
-    }
-
-    #page-verification .page-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text-heading);
-    }
-
-    #page-verification .theme-toggle {
-      width: 40px;
-      height: 40px;
-      background: var(--card-bg-alt);
-      border: 1px solid var(--card-border-alt);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--text);
-      transition: var(--transition);
-    }
-
-    #page-verification .theme-toggle:hover {
-      transform: scale(1.05);
-    }
-
-    #page-verification .card {
-      padding: 0;
     }
 
     #page-verification .section-title {
@@ -1664,81 +1610,74 @@
     PAGE: FORGOT PASSWORD
     ============================================================ -->
     <div id="page-forgot-password" class="page-section">
-      <div class="app-container">
-        <header class="header">
+      <div class="card">
+        <div class="fp-header">
           <button class="back-btn" onclick="showPage('page-sign')">← Back</button>
           <h1 class="page-title">Reset Password</h1>
-          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-            <svg class="icon-moon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </div>
+        <div id="fp-step1">
+          <div class="step-indicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+          </div>
+          <p class="instruction-text">Enter your email address. We'll send you a 6-digit code to reset your password.</p>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" id="resetEmail" placeholder="trader@example.com" />
+          </div>
+          <button class="btn-primary" onclick="fpHandleSendCode()">
+            <span class="spinner"></span>
+            <span class="btn-text">Send Code</span>
           </button>
-        </header>
+        </div>
 
-        <div class="card">
-          <div id="fp-step1">
-            <div class="step-indicator">
-              <div class="step-dot active"></div>
-              <div class="step-dot"></div>
-              <div class="step-dot"></div>
-            </div>
-            <p class="instruction-text">Enter your email address. We'll send you a 6-digit code to reset your password.</p>
-            <div class="form-group">
-              <label class="form-label">Email Address</label>
-              <input type="email" class="form-input" id="resetEmail" placeholder="trader@example.com" />
-            </div>
-            <button class="btn-primary" onclick="fpHandleSendCode()">
-              <span class="spinner"></span>
-              <span class="btn-text">Send Code</span>
-            </button>
+        <div id="fp-step2" class="hidden">
+          <div class="step-indicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+          </div>
+          <p class="instruction-text">We've sent a 6-digit code to <strong id="fpEmailDisplay"></strong>. Please check your inbox and spam folder.</p>
+
+          <div class="otp-container" id="fpOtpContainer">
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="0" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="1" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="2" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="3" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="4" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="5" />
           </div>
 
-          <div id="fp-step2" class="hidden">
-            <div class="step-indicator">
-              <div class="step-dot active"></div>
-              <div class="step-dot active"></div>
-              <div class="step-dot"></div>
-            </div>
-            <p class="instruction-text">We've sent a 6-digit code to <strong id="fpEmailDisplay"></strong>. Please check your inbox and spam folder.</p>
-
-            <div class="otp-container" id="fpOtpContainer">
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="0" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="1" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="2" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="3" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="4" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="5" />
-            </div>
-
-            <div class="resend-row">
-              <button class="resend-link" id="fpResendBtn" onclick="fpHandleResendCode()">Resend Code <span id="fpOtpTimer">(60s)</span></button>
-            </div>
-
-            <button class="btn-primary" id="fpVerifyBtn" onclick="fpHandleVerifyCode()" disabled>
-              <span class="spinner"></span>
-              <span class="btn-text">Verify Code</span>
-            </button>
+          <div class="resend-row">
+            <button class="resend-link" id="fpResendBtn" onclick="fpHandleResendCode()">Resend Code <span id="fpOtpTimer">(60s)</span></button>
           </div>
 
-          <div id="fp-step3" class="hidden">
-            <div class="step-indicator">
-              <div class="step-dot active"></div>
-              <div class="step-dot active"></div>
-              <div class="step-dot active"></div>
-            </div>
-            <p class="instruction-text">Code verified. Enter your new password below.</p>
-            <div class="form-group">
-              <label class="form-label">New Password</label>
-              <input type="password" class="form-input" id="fpNewPassword" placeholder="Min. 6 characters" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Confirm New Password</label>
-              <input type="password" class="form-input" id="fpConfirmPassword" placeholder="••••••••" />
-            </div>
-            <button class="btn-primary" onclick="fpHandleUpdatePassword()">
-              <span class="spinner"></span>
-              <span class="btn-text">Update Password</span>
-            </button>
+          <button class="btn-primary" id="fpVerifyBtn" onclick="fpHandleVerifyCode()" disabled>
+            <span class="spinner"></span>
+            <span class="btn-text">Verify Code</span>
+          </button>
+        </div>
+
+        <div id="fp-step3" class="hidden">
+          <div class="step-indicator">
+            <div class="step-dot active"></div>
+            <div class="step-dot active"></div>
+            <div class="step-dot active"></div>
           </div>
+          <p class="instruction-text">Code verified. Enter your new password below.</p>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-input" id="fpNewPassword" placeholder="Min. 6 characters" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-input" id="fpConfirmPassword" placeholder="••••••••" />
+          </div>
+          <button class="btn-primary" onclick="fpHandleUpdatePassword()">
+            <span class="spinner"></span>
+            <span class="btn-text">Update Password</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1747,39 +1686,32 @@
     PAGE: VERIFICATION
     ============================================================ -->
     <div id="page-verification" class="page-section">
-      <div class="app-container">
-        <header class="header">
+      <div class="card">
+        <div class="fp-header">
           <button class="back-btn" onclick="showPage('page-signup')">← Back</button>
           <h1 class="page-title">Verify Account</h1>
-          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-            <svg class="icon-moon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-          </button>
-        </header>
-
-        <main>
-          <div class="card" id="verifEmailSection">
-            <div class="section-title">📧 Email Verification</div>
-            <p class="section-desc">
-              We've sent a 6-digit code to your email. Please check your inbox (and spam folder) and enter the code below.
-            </p>
-            <div class="otp-container" id="verifOtpContainer">
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="0" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="1" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="2" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="3" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="4" />
-              <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="5" />
-            </div>
-            <div class="resend-row">
-              <button class="resend-link" id="verifResendBtn" onclick="verifHandleResend()">Resend Code <span id="verifTimer">(60s)</span></button>
-            </div>
-            <button class="btn-primary" id="verifVerifyBtn" onclick="verifHandleVerify()" disabled>
-              <span class="spinner"></span>
-              <span class="btn-text">Verify & Continue</span>
-            </button>
+        </div>
+        <div id="verifEmailSection">
+          <div class="section-title">📧 Email Verification</div>
+          <p class="section-desc">
+            We've sent a 6-digit code to your email. Please check your inbox (and spam folder) and enter the code below.
+          </p>
+          <div class="otp-container" id="verifOtpContainer">
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="0" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="1" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="2" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="3" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="4" />
+            <input type="text" class="otp-input" maxlength="1" inputmode="numeric" data-index="5" />
           </div>
-        </main>
+          <div class="resend-row">
+            <button class="resend-link" id="verifResendBtn" onclick="verifHandleResend()">Resend Code <span id="verifTimer">(60s)</span></button>
+          </div>
+          <button class="btn-primary" id="verifVerifyBtn" onclick="verifHandleVerify()" disabled>
+            <span class="spinner"></span>
+            <span class="btn-text">Verify & Continue</span>
+          </button>
+        </div>
       </div>
     </div>
 
