@@ -1,294 +1,378 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>FUTURES</title>
-<link rel="icon" type="image/png" href="assets/images/favicon.png">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FUTURES</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/dancing-script@5.0.18/index.css" />
+  <link href="https://fonts.bunny.net/css?family=inter:400;500" rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-bg: #000000;
+      --color-text: #ffffff;
+      --color-motto: #bbddff;
+      --glow-white: rgba(255, 255, 255, 0.06);
+      --glow-text: rgba(255, 255, 255, 0.3);
+      --accent-border: rgba(100, 180, 255, 0.3);
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--color-bg);
+      font-family: "Inter", sans-serif;
+    }
+
+    .splash-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(
+        circle at 50% 40%,
+        var(--glow-white) 0%,
+        transparent 80%
+      );
+      transition: opacity 0.6s ease-out;
+      will-change: opacity;
+      cursor: pointer;
+    }
+
+    .splash-container.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scan-line {
+      position: absolute;
+      top: 38%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 50%,
+        transparent 100%
+      );
+      transform: translateY(-40px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scan-line.animate {
+      animation: scanSweep 0.8s ease-out 0.6s forwards;
+    }
+
+    @keyframes scanSweep {
+      0% { transform: translateY(-40px); opacity: 0; }
+      20% { opacity: 0.6; }
+      100% { transform: translateY(25px); opacity: 0; }
+    }
+
+    .micro-dot {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: var(--color-text);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .micro-dot.left-dot { top: 38%; left: 25%; }
+    .micro-dot.right-dot { top: 38%; right: 25%; }
+
+    .micro-dot.left-dot.animate { animation: dotFlicker 0.6s ease-out 1s forwards; }
+    .micro-dot.right-dot.animate { animation: dotFlicker 0.6s ease-out 1.1s forwards; }
+
+    @keyframes dotFlicker {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    .title-wrapper {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .futures-title {
+      font-family: "Dancing Script", cursive;
+      font-weight: 700;
+      font-size: clamp(3.2rem, 16vw, 7.5rem);
+      color: var(--color-text);
+      letter-spacing: 0.02em;
+      text-shadow: 0 0 12px var(--glow-text);
+      display: flex;
+      gap: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .futures-letter {
+      display: inline-block;
+      opacity: 0;
+      transform: scale(0.85) translateY(10px);
+      filter: blur(2px);
+      transition: none;
+      will-change: opacity, transform, filter;
+    }
+
+    .futures-letter.visible {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: blur(0);
+      transition: opacity 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        filter 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .futures-title.breathing {
+      animation: breathe 5s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); text-shadow: 0 0 12px var(--glow-text); }
+      50% { transform: scale(1.008); text-shadow: 0 0 20px rgba(255, 255, 255, 0.45), 0 0 40px rgba(100, 180, 255, 0.15); }
+    }
+
+    .motto {
+      margin-top: 2.5rem;
+      font-family: "Inter", sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      color: var(--color-motto);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--accent-border);
+      border-radius: 60px;
+      padding: 0.5rem 1.2rem;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .motto.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tap-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      font-family: "Inter", sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: rgba(255, 255, 255, 0.2);
+      opacity: 0;
+      transition: opacity 1s ease-out;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .tap-hint.visible {
+      opacity: 1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .particle.animate {
+      animation: particleFloat 3s ease-out forwards;
+    }
+
+    @keyframes particleFloat {
+      0% { opacity: 0; transform: translateY(0) scale(0); }
+      20% { opacity: 0.6; transform: translateY(-10px) scale(1); }
+      100% { opacity: 0; transform: translateY(-40px) scale(0.3); }
+    }
+
+    @media (max-width: 480px) {
+      .motto { font-size: 0.75rem; margin-top: 2rem; padding: 0.4rem 1rem; }
+      .tap-hint { font-size: 0.65rem; bottom: 1.5rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .futures-letter, .motto, .scan-line, .micro-dot, .particle {
+        animation: none !important;
+        transition: opacity 0.3s ease-out !important;
+      }
+      .futures-letter.visible { opacity: 1 !important; transform: none !important; filter: none !important; }
+      .motto.visible { opacity: 1 !important; transform: none !important; }
+      .futures-title.breathing { animation: none !important; }
+    }
+  </style>
 </head>
 <body>
-<div id="splash" class="splash">
-  <div class="splash-glow"></div>
-  <div class="splash-letters">
-    <span class="spl" style="--i:0">F</span>
-    <span class="spl" style="--i:1">U</span>
-    <span class="spl" style="--i:2">T</span>
-    <span class="spl" style="--i:3">U</span>
-    <span class="spl" style="--i:4">R</span>
-    <span class="spl" style="--i:5">E</span>
-    <span class="spl" style="--i:6">S</span>
+  <div class="splash-container" id="splashContainer">
+    <div class="scan-line" id="scanLine"></div>
+    <div class="micro-dot left-dot" id="leftDot"></div>
+    <div class="micro-dot right-dot" id="rightDot"></div>
+    <div id="particlesContainer"></div>
+
+    <div class="title-wrapper">
+      <h1 class="futures-title" id="futuresTitle" aria-label="FUTURES">
+        <span class="futures-letter" data-delay="0">F</span>
+        <span class="futures-letter" data-delay="70">U</span>
+        <span class="futures-letter" data-delay="140">T</span>
+        <span class="futures-letter" data-delay="210">U</span>
+        <span class="futures-letter" data-delay="280">R</span>
+        <span class="futures-letter" data-delay="350">E</span>
+        <span class="futures-letter" data-delay="420">S</span>
+      </h1>
+    </div>
+
+    <p class="motto" id="motto">PRICE IS THE ONLY INDICATOR</p>
+
+    <p class="tap-hint" id="tapHint">TAP TO CONTINUE</p>
   </div>
-  <div class="splash-motto-wrap">
-    <p class="splash-motto">PRICE IS THE ONLY INDICATOR</p>
-  </div>
-</div>
 
-<div id="toast"></div>
+  <script>
+    (function () {
+      "use strict";
 
-<div id="page-auth" class="page">
-  <div class="auth-card">
-    <div class="auth-logo">FUTURES</div>
-    <p class="auth-motto">PRICE IS THE ONLY INDICATOR</p>
-    <div class="pill-tabs" id="auth-tabs">
-      <button class="pill-tab active" data-tab="login">Log In</button>
-      <button class="pill-tab" data-tab="signup">Sign Up</button>
-    </div>
-    <form id="auth-form">
-      <div id="auth-name-field" class="field-hidden">
-        <input type="text" id="auth-name" placeholder="Future Trader" class="input">
-      </div>
-      <input type="email" id="auth-email" placeholder="trader@example.com" class="input" required>
-      <input type="password" id="auth-password" placeholder="Password" class="input" required>
-      <div id="auth-confirm-field" class="field-hidden">
-        <input type="password" id="auth-confirm" placeholder="Confirm Password" class="input">
-      </div>
-      <div id="auth-agreement" class="field-hidden">
-        <label class="checkbox-label">
-          <input type="checkbox" id="auth-terms">
-          <span>I agree to the <a href="#" id="terms-link">Terms &amp; Conditions</a> and <a href="#" id="risk-link">Risk Disclosure</a></span>
-        </label>
-      </div>
-      <button type="submit" id="auth-submit" class="btn btn-primary">Log In</button>
-    </form>
-    <button id="auth-google" class="btn btn-outline">Continue with Google</button>
-    <button id="auth-forgot" class="btn btn-text">Forgot password?</button>
-    <p id="auth-error" class="error-text"></p>
-  </div>
-</div>
+      const container = document.getElementById("splashContainer");
+      const letters = document.querySelectorAll(".futures-letter");
+      const mottoEl = document.getElementById("motto");
+      const scanLine = document.getElementById("scanLine");
+      const leftDot = document.getElementById("leftDot");
+      const rightDot = document.getElementById("rightDot");
+      const titleEl = document.getElementById("futuresTitle");
+      const tapHint = document.getElementById("tapHint");
+      const particlesContainer = document.getElementById("particlesContainer");
 
-<div id="app" class="app-hidden">
-  <header class="topbar">
-    <h1 class="topbar-logo" id="topbar-title">FUTURES</h1>
-    <div class="topbar-right">
-      <button id="theme-btn" class="btn-icon">☀️</button>
-      <button id="support-btn" class="btn-icon">🆘</button>
-      <button id="logout-btn" class="btn-icon">🚪</button>
-    </div>
-  </header>
+      let hasAnimated = false;
+      let soundPlayed = false;
 
-  <main class="content">
-    <div id="page-dashboard" class="page page-content">
-      <div class="card">
-        <div class="balance-row">
-          <div>
-            <div class="balance" id="dash-balance">$0</div>
-            <div class="sub-balance">
-              <span>Equity: <strong id="dash-equity">$0</strong></span>
-              <span>Margin: <strong id="dash-margin">$0</strong></span>
-            </div>
-          </div>
-          <div id="health-dot" class="health-dot green"></div>
-        </div>
-        <div class="account-type-row">
-          <span class="label-xs">Account</span>
-          <div class="type-selector" id="acct-type-selector">
-            <button class="type-btn active" data-type="Demo">Demo</button>
-            <button class="type-btn" data-type="Real">Real</button>
-          </div>
-        </div>
-        <div class="daily-limit">
-          <div class="limit-header"><span class="label-xs">Daily trades (max 5 per 24h)</span><span class="label-xs" id="dash-trade-count">∞ | 0 / 5</span></div>
-          <div class="limit-bar"><div class="limit-fill" id="dash-limit-fill" style="width:0%"></div></div>
-        </div>
-        <div class="health-text" id="dash-health-text">Bot Active</div>
-      </div>
+      const cashOutAudio = new Audio("cashout.mp3");
+      cashOutAudio.volume = 0.65;
+      cashOutAudio.preload = "auto";
 
-      <div class="card">
-        <div class="controls-row">
-          <button class="btn btn-start" id="btn-start">▶ START BOT</button>
-          <button class="btn btn-stop" id="btn-stop">⏹ STOP BOT</button>
-        </div>
-        <div id="auto-stop-info" class="auto-stop-info hidden">
-          Bot runs until 1:3 R:R target is hit or market conditions trigger exit. Tap STOP to intervene.
-        </div>
-        <div class="mode-selector" id="mode-selector">
-          <button class="mode-btn active" data-mode="long">Long-term</button>
-          <button class="mode-btn" data-mode="short">Short-term</button>
-        </div>
-        <div id="mode-params">
-          <div class="param-row" id="trade-count-row">
-            <span class="label-sm">Number of trades</span>
-            <div class="stepper">
-              <button class="stepper-btn" id="tc-dec">−</button>
-              <span id="tc-value">1</span>
-              <button class="stepper-btn" id="tc-inc">+</button>
-            </div>
-          </div>
-          <div class="param-row">
-            <span class="label-sm">Risk %</span>
-            <span><strong id="risk-pct">5</strong>% (<span id="risk-usd">$0.00</span>)</span>
-          </div>
-          <div class="slider-container">
-            <div class="slider-track"><div class="slider-fill" id="risk-fill" style="width:50%"></div></div>
-            <div class="slider-labels" id="risk-labels">
-              <button data-risk="1">1</button><button data-risk="2">2</button><button data-risk="3">3</button>
-              <button data-risk="4">4</button><button data-risk="5">5</button><button data-risk="6">6</button>
-              <button data-risk="7">7</button><button data-risk="8">8</button><button data-risk="9">9</button>
-              <button data-risk="10">10</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      function playCashOutSound() {
+        cashOutAudio.currentTime = 0;
+        cashOutAudio.play().catch(function (err) {
+          console.warn("Audio play blocked:", err);
+        });
+      }
 
-      <div class="card">
-        <div class="card-header"><span class="card-title">📋 Recent Trades</span></div>
-        <div id="recent-trades">
-          <div class="trade-header"><span>Pair</span><span>Type</span><span>P&L</span><span>Time</span></div>
-          <div class="empty-state">No trades yet</div>
-        </div>
-        <button class="btn-link" id="see-all-trades">See all →</button>
-      </div>
+      function navigateToNext() {
+        container.classList.add("fade-out");
+        setTimeout(function () {
+          window.location.href = "sign.html";
+        }, 600);
+      }
 
-      <div class="card">
-        <div class="performance-row">
-          <span class="card-title">Today's P&L</span>
-          <span class="today-pnl" id="dash-daily-pnl">+$0.00</span>
-        </div>
-        <div class="actions-grid">
-          <button class="action-btn" data-page="copilot">💬 Chat</button>
-          <button class="action-btn" data-page="accountability">📖 History</button>
-          <button class="action-btn" data-page="settings">⚙️ Settings</button>
-          <button class="action-btn" id="support-quick">🆘 Support</button>
-        </div>
-        <div id="cooldown-banner" class="warning-banner hidden">
-          ⚠️ Bot paused due to 3 consecutive losses (cooldown 24h).
-        </div>
-      </div>
-    </div>
+      function animateLetters() {
+        letters.forEach(function (letterEl) {
+          const delay = parseInt(letterEl.getAttribute("data-delay"), 10);
+          setTimeout(function () {
+            letterEl.classList.add("visible");
+          }, delay);
+        });
+      }
 
-    <div id="page-accountability" class="page page-content hidden">
-      <div class="stats-row" id="acct-stats">
-        <div class="stat-card"><div class="stat-value" id="acct-total">0</div><div class="stat-label">Total Trades</div></div>
-        <div class="stat-card"><div class="stat-value profit" id="acct-winrate">0%</div><div class="stat-label">Win Rate</div></div>
-        <div class="stat-card"><div class="stat-value" id="acct-pnl">$0</div><div class="stat-label">Total P&L</div></div>
-      </div>
-      <div class="filter-row">
-        <div class="range-row" id="range-row">
-          <button class="range-btn active" data-range="7">7 Days</button>
-          <button class="range-btn" data-range="30">30 Days</button>
-          <button class="range-btn" data-range="90">90 Days</button>
-          <button class="range-btn" data-range="all">All</button>
-        </div>
-        <div class="export-row">
-          <button class="export-btn" data-format="csv">CSV</button>
-          <button class="export-btn" data-format="pdf">PDF</button>
-        </div>
-      </div>
-      <div class="card table-card">
-        <div id="trades-table">
-          <div class="table-header"><span>Pair</span><span>Type</span><span>Lots</span><span>Entry</span><span>Exit</span><span>P&L</span><span>Time</span></div>
-          <div class="empty-state" id="trades-empty">No trades found</div>
-        </div>
-      </div>
-    </div>
+      function startBreathing() {
+        titleEl.classList.add("breathing");
+      }
 
-    <div id="page-copilot" class="page page-content hidden">
-      <div class="chat-area" id="chat-area">
-        <div class="chat-msg bot">👋 Hi, I'm FUTURES. Ask me anything trading related and your account management.</div>
-      </div>
-      <div class="suggestions" id="suggestions">
-        <button class="chip" data-action="What is my account balance?">Balance</button>
-        <button class="chip" data-action="Show my open trades">Trades</button>
-        <button class="chip" data-action="Explain the last trade">Last trade</button>
-        <button class="chip" data-action="Any news affecting the market?">News</button>
-        <button class="chip" data-action="Generate a chart for GBPUSD">Chart</button>
-        <button class="chip" data-action="Stop the bot now">Stop</button>
-        <button class="chip" data-action="clear">Clear</button>
-      </div>
-      <div class="confirm-row hidden" id="confirm-row">
-        <span class="label-xs">This action requires confirmation:</span>
-        <button class="btn btn-sm btn-success" id="confirm-btn">Confirm</button>
-      </div>
-      <div class="input-row">
-        <input type="text" id="chat-input" class="input chat-input" placeholder="Ask FUTURES...">
-        <button class="btn btn-primary btn-circle" id="chat-send">→</button>
-      </div>
-    </div>
+      function revealMotto() {
+        mottoEl.classList.add("visible");
+      }
 
-    <div id="page-settings" class="page page-content hidden">
-      <div class="card">
-        <div class="card-title">👤 Account</div>
-        <div class="setting-row"><span>Display name</span><span id="set-name">Trader</span><button class="btn-link edit-name">Edit</button></div>
-        <div class="setting-row"><span>Password</span><button class="btn-link" id="show-pw-modal">Update</button></div>
-        <div class="setting-row"><span>Two-factor authentication</span><label class="toggle"><input type="checkbox" disabled><span class="slider"></span></label></div>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 Trading Preferences</div>
-        <div class="setting-row"><span>Risk per trade</span><span><strong id="set-risk-pct">5</strong>%</span></div>
-        <div class="slider-container">
-          <div class="slider-track"><div class="slider-fill" id="set-risk-fill" style="width:50%"></div></div>
-          <div class="slider-labels" id="set-risk-labels">
-            <button data-risk="1">1</button><button data-risk="2">2</button><button data-risk="3">3</button>
-            <button data-risk="4">4</button><button data-risk="5">5</button><button data-risk="6">6</button>
-            <button data-risk="7">7</button><button data-risk="8">8</button><button data-risk="9">9</button>
-            <button data-risk="10">10</button>
-          </div>
-        </div>
-        <div class="setting-row"><span>Max daily trades</span>
-          <div class="stepper">
-            <button class="stepper-btn" id="mdt-dec">−</button>
-            <span id="mdt-value">5</span>
-            <button class="stepper-btn" id="mdt-inc">+</button>
-          </div>
-        </div>
-        <div class="section-label">Breakeven policy</div>
-        <div class="radio-group" id="be-group">
-          <label class="radio-option"><input type="radio" name="be" value="auto" checked><span>Auto BE (Move SL to entry after profit)</span></label>
-          <label class="radio-option"><input type="radio" name="be" value="notify"><span>Notify & Exit (Alert user, auto-close)</span></label>
-          <label class="radio-option"><input type="radio" name="be" value="none"><span>No BE (Trailing stop only)</span></label>
-        </div>
-        <div id="compound-warning" class="warning-banner hidden">⚠️ Auto-compounding reinvests profits – risk increases after wins. Use with caution.</div>
-        <div class="setting-row"><span>Auto-compounding</span><label class="toggle"><input type="checkbox" id="set-compound"><span class="slider"></span></label></div>
-        <div class="setting-row"><span>Dry-run mode</span><label class="toggle"><input type="checkbox" id="set-dryrun"><span class="slider"></span></label></div>
-      </div>
-      <div class="card">
-        <div class="card-title">📡 MT5 Connection</div>
-        <div class="setting-row"><span>Account</span><span id="mt5-login">Not configured</span></div>
-        <div class="section-label">Broker</div>
-        <div class="radio-group" id="broker-group">
-          <label class="radio-option"><input type="radio" name="broker" value="HFM" checked><span>HFM</span></label>
-          <label class="radio-option"><input type="radio" name="broker" value="Exness"><span>Exness</span></label>
-        </div>
-        <div class="section-label">Account Type</div>
-        <div class="radio-group" id="acct-type-group">
-          <label class="radio-option"><input type="radio" name="accttype" value="Demo" checked><span>Demo</span></label>
-          <label class="radio-option"><input type="radio" name="accttype" value="Live"><span>Live</span></label>
-          <label class="radio-option"><input type="radio" name="accttype" value="Real"><span>Real</span></label>
-        </div>
-        <div class="setting-row"><span>Server</span><span id="mt5-server">-</span><span id="mt5-status" class="label-xs">Not configured</span></div>
-        <button class="btn btn-outline" id="test-mt5">Test Connection</button>
-      </div>
-      <div class="card">
-        <div class="card-title">🔔 Notifications</div>
-        <div id="notif-list"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">🎨 Appearance</div>
-        <div class="setting-row"><span>Dark mode</span><label class="toggle"><input type="checkbox" id="theme-switch"><span class="slider"></span></label></div>
-      </div>
-      <div class="card">
-        <div class="card-title">📁 Data Management</div>
-        <button class="btn btn-outline" id="export-csv">Export Trade History</button>
-        <button class="btn btn-outline" id="clear-cache" style="margin-top:8px;border-color:var(--loss)">Clear Cached Chat History</button>
-      </div>
-      <div class="settings-footer">Settings are saved automatically</div>
-    </div>
-  </main>
+      function triggerDecorations() {
+        scanLine.classList.add("animate");
+        leftDot.classList.add("animate");
+        rightDot.classList.add("animate");
+        spawnParticles();
+      }
 
-  <nav class="bottom-nav" id="bottom-nav">
-    <button class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></button>
-    <button class="nav-item" data-page="accountability"><span class="nav-icon">📋</span><span class="nav-label">Accountability</span></button>
-    <button class="nav-item" data-page="copilot"><span class="nav-icon">🤖</span><span class="nav-label">Copilot</span></button>
-    <button class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
-  </nav>
-</div>
+      function spawnParticles() {
+        const count = 8;
+        for (let i = 0; i < count; i++) {
+          const particle = document.createElement("div");
+          particle.className = "particle";
+          particle.style.left = 20 + Math.random() * 60 + "%";
+          particle.style.top = 35 + Math.random() * 30 + "%";
+          particle.style.animationDelay = 1.2 + Math.random() * 1.5 + "s";
+          particlesContainer.appendChild(particle);
 
-<div id="modal-overlay" class="modal-overlay hidden">
-  <div class="modal" id="modal-content"></div>
-</div>
+          requestAnimationFrame(function () {
+            particle.classList.add("animate");
+          });
 
-<audio id="cashout-sound" src="assets/audio/cashout.mp3" preload="auto"></audio>
-<script src="main.js"></script>
+          setTimeout(function () {
+            if (particle.parentNode) particle.parentNode.removeChild(particle);
+          }, 5000);
+        }
+      }
+
+      function showTapHint() {
+        setTimeout(function () {
+          tapHint.classList.add("visible");
+        }, 1800);
+      }
+
+      function startAnimation() {
+        if (hasAnimated) return;
+        hasAnimated = true;
+
+        animateLetters();
+        setTimeout(triggerDecorations, 500);
+        setTimeout(revealMotto, 900);
+        setTimeout(startBreathing, 1000);
+        showTapHint();
+      }
+
+      function handleTap() {
+        if (!hasAnimated) return;
+        if (soundPlayed) return;
+        soundPlayed = true;
+
+        tapHint.classList.remove("visible");
+        playCashOutSound();
+
+        setTimeout(navigateToNext, 900);
+      }
+
+      container.addEventListener("click", handleTap);
+      container.addEventListener("touchstart", handleTap);
+
+      window.addEventListener("load", function () {
+        startAnimation();
+      });
+
+      window.addEventListener("beforeunload", function () {
+        cashOutAudio.pause();
+        cashOutAudio.src = "";
+      });
+    })();
+  </script>
 </body>
 </html>

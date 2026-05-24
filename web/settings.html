@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FUTURES – Settings</title>
+  <link href="https://fonts.bunny.net/css?family=inter:400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #eef3fc;
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --card-border: rgba(43, 127, 255, 0.3);
+      --text: #0a2540;
+      --text-muted: #5f7f9e;
+      --text-heading: #0a2540;
+      --primary: #2b6ef0;
+      --primary-fg: #ffffff;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --input-bg: #f8fafc;
+      --border: #e2e8f0;
+      --radius: 20px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.05);
+      --transition: all 0.2s ease;
+    }
+
+    [data-theme="dark"] {
+      --bg: #050505;
+      --card-bg: rgba(15, 15, 15, 0.9);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #ffffff;
+      --text-muted: #888888;
+      --text-heading: #f0f0f0;
+      --primary: #ffffff;
+      --primary-fg: #000000;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --input-bg: #111111;
+      --border: #222222;
+      --shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      transition: background 0.3s ease, color 0.3s ease;
+      display: flex;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+    }
+
+    .app-container { width: 100%; max-width: 480px; position: relative; }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .back-btn {
+      background: none; border: none; cursor: pointer; color: var(--text);
+      display: flex; align-items: center; gap: 0.25rem; font-weight: 600; font-size: 0.95rem;
+    }
+    .page-title { font-size: 1.25rem; font-weight: 700; color: var(--text-heading); }
+    .theme-toggle {
+      width: 40px; height: 40px; background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text); transition: var(--transition);
+    }
+    .theme-toggle:hover { transform: scale(1.05); }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: var(--transition);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-row.disabled { opacity: 0.5; pointer-events: none; }
+    
+    .setting-label { flex: 1; }
+    .setting-title { font-size: 0.95rem; font-weight: 500; color: var(--text); }
+    .setting-desc { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .setting-value { font-size: 0.9rem; color: var(--text-muted); margin-right: 1rem; }
+    .setting-action {
+      font-size: 0.85rem; font-weight: 600; color: var(--primary); cursor: pointer;
+      padding: 0.4rem 0.8rem; border-radius: 8px; transition: var(--transition);
+    }
+    .setting-action:hover { background: var(--input-bg); }
+
+    .btn-action {
+      width: 100%; padding: 0.9rem; margin-top: 0.75rem;
+      background: transparent; border: 1.5px solid var(--primary); color: var(--primary);
+      border-radius: 12px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer;
+      transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-action:hover { background: var(--primary); color: var(--primary-fg); }
+    .btn-danger { border-color: var(--danger); color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+
+    /* Toggle Switch */
+    .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0; background: var(--border);
+      border-radius: 24px; transition: var(--transition);
+    }
+    .toggle-slider::before {
+      content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%; transition: var(--transition); box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* Slider */
+    .risk-slider-container { width: 100%; padding: 0.5rem 0; }
+    .risk-slider { width: 100%; height: 6px; background: var(--border); border-radius: 3px; outline: none; appearance: none; cursor: pointer; }
+    .risk-slider::-webkit-slider-thumb {
+      appearance: none; width: 20px; height: 20px; background: var(--primary); border-radius: 50%; cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    /* Radio Group */
+    .radio-group { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; }
+    .radio-option {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem;
+      background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: var(--transition);
+    }
+    .radio-option.active { border-color: var(--primary); background: rgba(43, 110, 240, 0.1); }
+    .radio-dot { width: 16px; height: 16px; border: 2px solid var(--text-muted); border-radius: 50%; position: relative; transition: var(--transition); }
+    .radio-option.active .radio-dot { border-color: var(--primary); }
+    .radio-option.active .radio-dot::after {
+      content: ''; position: absolute; inset: 3px; background: var(--primary); border-radius: 50%;
+    }
+    .radio-label { font-size: 0.9rem; font-weight: 500; }
+
+    /* Warning Banner */
+    .warning-banner {
+      padding: 0.75rem; border-radius: 10px; font-size: 0.85rem; margin-bottom: 1rem;
+      display: none; align-items: center; gap: 0.5rem; line-height: 1.4;
+    }
+    .warning-banner.visible { display: flex; }
+    .warning-banner.warning { background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); color: #eab308; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-content {
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px;
+      width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-title { font-size: 1.25rem; font-weight: 700; }
+    .modal-close { background: none; border: none; color: var(--text); cursor: pointer; font-size: 1.5rem; line-height: 1; }
+    .modal-body { font-size: 0.9rem; line-height: 1.5; color: var(--text-muted); }
+    
+    .form-input {
+      width: 100%; padding: 0.85rem; background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 0.95rem; margin-bottom: 1rem;
+    }
+    .form-input:focus { outline: none; border-color: var(--primary); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 0.75rem 1.25rem; box-shadow: var(--shadow); font-size: 0.9rem; font-weight: 500;
+      opacity: 0; transition: all 0.3s ease; z-index: 200; pointer-events: none;
+    }
+    .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--success); color: var(--success); }
+    .toast.error { border-color: var(--danger); color: var(--danger); }
+
+    .hidden { display: none !important; }
+    @media (max-width: 480px) { .setting-row { flex-wrap: wrap; } .setting-value { margin-right: 0; margin-bottom: 0.5rem; } }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <button class="back-btn" onclick="goBack()">← Back</button>
+      <h1 class="page-title">Settings</h1>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg id="iconSun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg id="iconMoon" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </header>
+
+    <main>
+      <!-- ACCOUNT CARD -->
+      <div class="card">
+        <div class="card-title">👤 Account</div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="setting-title">Display name</div>
+            <div class="setting-desc" id="displayName">Future Trader</div>
+          </div>
+          <span class="setting-action" onclick="openModal('editNameModal')">Edit</span>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="setting-title">Email</div>
+            <div class="setting-desc">trader@example.com</div>
+          </div>
+          <span class="setting-value">Read-only</span>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="setting-title">Phone</div>
+            <div class="setting-desc">+256 745xxxxxx</div>
+          </div>
+          <span class="setting-value">Verified</span>
+        </div>
+        <button class="btn-action" onclick="handleChangePassword()">Change Password</button>
+        
+        <div class="setting-row" style="border:none; padding-top: 1rem;">
+          <div class="setting-label">
+            <div class="setting-title">Two-factor authentication</div>
+            <div class="setting-desc">Enhance security with TOTP</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="tfaToggle" onchange="handle2FAChange(this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="setting-title">Active sessions</div>
+            <div class="setting-desc">Manage logged-in devices</div>
+          </div>
+          <span class="setting-action" onclick="openModal('sessionsModal')">View (3)</span>
+        </div>
+        <button class="btn-action btn-danger" onclick="handleLogout()" style="margin-top: 1rem;">Logout</button>
+      </div>
+
+      <!-- TRADING PREFERENCES CARD -->
+      <div class="card">
+        <div class="card-title">️ Trading Preferences</div>
+        <div class="setting-row" style="border:none; padding-bottom: 0;">
+          <div class="setting-label">
+            <div class="setting-title">Long-term risk %</div>
+            <div class="setting-desc" id="riskValue">5%</div>
+          </div>
+        </div>
+        <div class="risk-slider-container">
+          <input type="range" class="risk-slider" id="riskSlider" min="1" max="10" step="0.5" value="5" oninput="updateRisk(this.value)">
+        </div>
+
+        <div class="setting-row" style="border:none; padding-bottom: 0; flex-direction: column; align-items: flex-start;">
+          <div class="setting-label" style="width: 100%; margin-bottom: 0.5rem;">
+            <div class="setting-title">Breakeven policy</div>
+          </div>
+          <div class="radio-group">
+            <div class="radio-option active" onclick="selectBE(this, 'auto')">
+              <div class="radio-dot"></div>
+              <span class="radio-label">Auto BE (Move SL to entry after profit)</span>
+            </div>
+            <div class="radio-option" onclick="selectBE(this, 'notify')">
+              <div class="radio-dot"></div>
+              <span class="radio-label">Notify & Exit (Alert user, auto-close if no response)</span>
+            </div>
+            <div class="radio-option" onclick="selectBE(this, 'none')">
+              <div class="radio-dot"></div>
+              <span class="radio-label">No BE (Trailing stop only)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="warning-banner warning" id="autoCompoundWarning">
+          ⚠️ Auto-compounding reinvests profits – risk increases after wins. Use with caution.
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="setting-title">Auto-compounding</div>
+            <div class="setting-desc">Recalculate risk based on new balance</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoCompoundToggle" onchange="handleAutoCompound(this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="setting-title">Dry-run mode (Paper trading)</div>
+            <div class="setting-desc">Simulate trades without real orders</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="dryRunToggle" onchange="handleDryRun(this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS CARD -->
+      <div class="card">
+        <div class="card-title">🔔 Notifications</div>
+        <div id="notifList">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- APPEARANCE CARD -->
+      <div class="card">
+        <div class="card-title">🎨 Appearance</div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="setting-title">Dark mode</div>
+            <div class="setting-desc">Switch app theme</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="darkModeToggle" onchange="toggleThemeManual(this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <div class="setting-title">Sound effects</div>
+            <div class="setting-desc">Cash-out sound on splash</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="soundToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- DATA MANAGEMENT CARD -->
+      <div class="card">
+        <div class="card-title">📁 Data Management</div>
+        <button class="btn-action" onclick="handleExport()">Export Trade History</button>
+        <button class="btn-action btn-danger" onclick="handleClearChat()" style="margin-top: 0.5rem;">Clear Cached Chat History</button>
+      </div>
+
+      <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+        Settings are saved to cloud and device automatically.
+      </p>
+    </main>
+  </div>
+
+  <!-- MODALS -->
+  <div class="modal-overlay" id="editNameModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Display Name</h2>
+        <button class="modal-close" onclick="closeModal('editNameModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="form-input" id="newNameInput" placeholder="Enter new name" />
+        <button class="btn-action" onclick="saveName()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="tfaSetupModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Setup 2FA</h2>
+        <button class="modal-close" onclick="closeModal('tfaSetupModal')">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <div style="background: white; padding: 1rem; border-radius: 10px; display: inline-block; margin-bottom: 1rem;">
+          <!-- Placeholder for QR Code -->
+          <svg width="150" height="150" viewBox="0 0 24 24" fill="#000"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v3h-3v-3zm-3 0h3v3h-3v-3zm0 3h3v3h-3v-3zm-3 0h3v3h-3v-3z"/></svg>
+        </div>
+        <p>Scan this QR code with your authenticator app or enter the secret key manually.</p>
+        <input type="text" class="form-input" id="tfaCodeInput" placeholder="Enter 6-digit verification code" style="text-align: center; letter-spacing: 0.2em;" />
+        <button class="btn-action" onclick="verify2FA()">Verify & Enable</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="sessionsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Active Sessions</h2>
+        <button class="modal-close" onclick="closeModal('sessionsModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="sessionsList">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Export Format</h2>
+        <button class="modal-close" onclick="closeModal('exportModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 1rem;">Select the format for your trade history export.</p>
+        <button class="btn-action" onclick="downloadExport('csv')">Download CSV</button>
+        <button class="btn-action" onclick="downloadExport('pdf')" style="margin-top: 0.5rem;">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /**
+     * AI AGENT NOTE: SETTINGS SCREEN - PRODUCTION IMPLEMENTATION GUIDE
+     * -----------------------------------------------------------------------
+     * 1. STATE MANAGEMENT:
+     *    - Use Zustand or Redux Toolkit for local state.
+     *    - Sync settings with Supabase `profiles` table on change (debounced for sliders).
+     *    - Profile fields: display_name, risk_percent, be_policy, auto_compounding, dry_run,
+     *      notification_settings (JSONB), theme_preference, sound_enabled.
+     *
+     * 2. SUPABASE INTEGRATION:
+     *    - Update profiles: `supabase.from('profiles').update({ ... }).eq('id', userId)`
+     *    - 2FA: Use `supabase.auth.mfa.enroll()` for TOTP setup.
+     *    - Sessions: `supabase.auth.sessions()` to list, `supabase.auth.revokeSession()` to revoke.
+     *    - Password: `supabase.auth.updateUser({ password })` requires re-auth.
+     *
+     * 3. REALTIME UPDATES:
+     *    - Not required for settings; user-initiated changes apply immediately.
+     *    - However, listen to `profiles` table changes to reflect updates from other devices.
+     *
+     * 4. SECURITY:
+     *    - Never store raw passwords. Use secure storage for session tokens.
+     *    - Validate all inputs before sending to backend.
+     *    - Handle 2FA setup flow carefully (backup codes generation).
+     *
+     * 5. EDGE CASES:
+     *    - Risk slider change while bot active: Apply to next trade only.
+     *    - Dry-run toggle while bot running: Show warning, apply after restart.
+     *    - Export large datasets: Use async backend generation with signed URL download.
+     */
+
+    const state = {
+      displayName: 'John Trader',
+      riskPercent: 5,
+      bePolicy: 'auto',
+      autoCompounding: false,
+      dryRun: false,
+      notifications: {
+        trade_execution: true, trade_closed: true, daily_summary: true,
+        loss_cooldown: true, maintenance: true, package_expiry: true, email_trade: false
+      },
+      darkMode: false,
+      soundEnabled: true
+    };
+
+    // UI References
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const iconSun = document.getElementById('iconSun');
+    const iconMoon = document.getElementById('iconMoon');
+    const toast = document.getElementById('toast');
+    const riskSlider = document.getElementById('riskSlider');
+    const riskValue = document.getElementById('riskValue');
+    const notifList = document.getElementById('notifList');
+    const sessionsList = document.getElementById('sessionsList');
+
+    // Initialize UI
+    function init() {
+      renderNotifications();
+      updateRiskSliderUI();
+      checkTheme();
+    }
+
+    function checkTheme() {
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      document.getElementById('darkModeToggle').checked = isDark;
+      if (isDark) {
+        iconSun.classList.add('hidden');
+        iconMoon.classList.remove('hidden');
+      } else {
+        iconSun.classList.remove('hidden');
+        iconMoon.classList.add('hidden');
+      }
+    }
+
+    function toggleThemeManual(checkbox) {
+      const isDark = checkbox.checked;
+      html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      iconSun.classList.toggle('hidden', !isDark);
+      iconMoon.classList.toggle('hidden', isDark);
+      
+      /**
+       * AI AGENT NOTE: Persist theme preference to device storage (AsyncStorage/SecureStore)
+       * and optionally to user profile for cross-device sync.
+       */
+      showToast('Theme updated', 'success');
+    }
+
+    // Theme Toggle (Header)
+    themeToggle.addEventListener('click', () => {
+      const isDark = html.getAttribute('data-theme') === 'light';
+      html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      iconSun.classList.toggle('hidden', !isDark);
+      iconMoon.classList.toggle('hidden', isDark);
+      document.getElementById('darkModeToggle').checked = isDark;
+    });
+
+    function renderNotifications() {
+      const labels = {
+        trade_execution: 'Trade execution', trade_closed: 'Trade closed', daily_summary: 'Daily summary',
+        loss_cooldown: '3-loss cooldown', maintenance: 'Maintenance', package_expiry: 'Package expiry',
+        email_trade: 'Email trade notifications'
+      };
+      notifList.innerHTML = Object.entries(state.notifications).map(([key, val]) => `
+        <div class="setting-row" style="border:none; padding: 0.5rem 0;">
+          <div class="setting-label">
+            <div class="setting-title">${labels[key]}</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" ${val ? 'checked' : ''} onchange="toggleNotif('${key}', this)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      `).join('');
+    }
+
+    function toggleNotif(key, checkbox) {
+      state.notifications[key] = checkbox.checked;
+      /**
+       * AI AGENT NOTE: Debounce this update to avoid spamming the database.
+       * Send batched update to Supabase after 1s of no changes.
+       */
+      showToast('Notification preference saved', 'success');
+    }
+
+    function updateRisk(val) {
+      state.riskPercent = parseFloat(val);
+      riskValue.textContent = `${val}%`;
+      /**
+       * AI AGENT NOTE: Debounce API call. Only send when slider stops moving.
+       * If bot is active, flag as 'pending_update' for next trade.
+       */
+    }
+    function updateRiskSliderUI() {
+      riskValue.textContent = `${state.riskPercent}%`;
+    }
+
+    function selectBE(el, policy) {
+      document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('active'));
+      el.classList.add('active');
+      state.bePolicy = policy;
+      /** AI AGENT NOTE: Save to profiles.be_policy */
+      showToast(`Breakeven policy set to: ${policy}`, 'success');
+    }
+
+    function handleAutoCompound(checkbox) {
+      state.autoCompounding = checkbox.checked;
+      document.getElementById('autoCompoundWarning').classList.toggle('visible', checkbox.checked);
+      /** AI AGENT NOTE: Save to profiles.auto_compounding */
+    }
+
+    function handleDryRun(checkbox) {
+      state.dryRun = checkbox.checked;
+      /** 
+       * AI AGENT NOTE: If bot is currently active, show warning:
+       * "Changes will take effect after restarting the bot."
+       * Do not stop bot automatically. Save to profiles.dry_run.
+       */
+      showToast('Dry-run mode updated', 'success');
+    }
+
+    function handle2FAChange(checkbox) {
+      if (checkbox.checked) {
+        openModal('tfaSetupModal');
+        // AI AGENT NOTE: Initiate Supabase Auth MFA enroll flow here.
+      } else {
+        // AI AGENT NOTE: Handle MFA unenroll. Requires user password verification.
+        showToast('2FA disabled', 'success');
+      }
+    }
+
+    function verify2FA() {
+      const code = document.getElementById('tfaCodeInput').value;
+      if (!code || code.length !== 6) return showToast('Enter valid 6-digit code', 'error');
+      
+      // AI AGENT NOTE: Verify TOTP code with Supabase Auth.
+      // On success: enable 2FA, generate backup codes, close modal.
+      showToast('2FA enabled successfully', 'success');
+      closeModal('tfaSetupModal');
+    }
+
+    function handleChangePassword() {
+      // AI AGENT NOTE: Use Supabase `resetPasswordForEmail` or secure password update flow.
+      // Requires re-authentication or email verification link.
+      showToast('Password reset email sent', 'success');
+    }
+
+    function handleLogout() {
+      if (!confirm('Are you sure you want to logout?')) return;
+      // AI AGENT NOTE: Call supabase.auth.signOut(), clear local storage, navigate to Login.
+      showToast('Logged out', 'success');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target === m) closeModal(m.id); }));
+
+    function saveName() {
+      const name = document.getElementById('newNameInput').value.trim();
+      if (!name) return showToast('Name cannot be empty', 'error');
+      state.displayName = name;
+      document.getElementById('displayName').textContent = name;
+      closeModal('editNameModal');
+      /** AI AGENT NOTE: Update profiles.display_name in Supabase */
+      showToast('Name updated', 'success');
+    }
+
+    function renderSessions() {
+      const sessions = [
+        { device: 'iPhone 14 Pro', location: 'Kampala, UG', last: 'Active now' },
+        { device: 'MacBook Air', location: 'Kampala, UG', last: '2h ago' },
+        { device: 'Web Browser', location: 'Nairobi, KE', last: '1d ago' }
+      ];
+      sessionsList.innerHTML = sessions.map((s, i) => `
+        <div class="setting-row" style="border:none;">
+          <div class="setting-label">
+            <div class="setting-title">${s.device}</div>
+            <div class="setting-desc">${s.location} • ${s.last}</div>
+          </div>
+          ${i !== 0 ? `<span class="setting-action" style="color:var(--danger)" onclick="revokeSession(${i})">Revoke</span>` : '<span class="setting-value" style="color:var(--success)">Current</span>'}
+        </div>
+      `).join('');
+    }
+    openModal('sessionsModal'); renderSessions(); // Preload for demo
+    closeModal('sessionsModal');
+
+    function revokeSession(index) {
+      // AI AGENT NOTE: Call supabase.auth.revokeSession(sessionId)
+      showToast('Session revoked', 'success');
+    }
+
+    function handleExport() { openModal('exportModal'); }
+    function downloadExport(format) {
+      closeModal('exportModal');
+      // AI AGENT NOTE: Trigger backend endpoint to generate file.
+      // For large datasets, use async job + signed URL.
+      showToast(`${format.toUpperCase()} export started`, 'success');
+    }
+
+    function handleClearChat() {
+      if (!confirm('Clear all cached chat messages? Server history remains.')) return;
+      // AI AGENT NOTE: Delete from local SQLite/AsyncStorage cache.
+      showToast('Chat cache cleared', 'success');
+    }
+
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = `toast visible ${type}`;
+      setTimeout(() => { toast.classList.remove('visible'); }, 3000);
+    }
+
+    function goBack() { window.history.back(); }
+
+    init();
+  </script>
+</body>
+</html>
+
