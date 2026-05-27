@@ -208,6 +208,20 @@ export async function copilotClear(): Promise<boolean> {
   } catch { return false; }
 }
 
+// ─── Support ─────────────────────────────────────────────
+export async function submitSupportTicket(title: string, description: string): Promise<{ status: string; ticket_id?: number; detail?: string } | null> {
+  try {
+    const token = await getAuthToken();
+    if (!token) return null;
+    const res = await fetch('/api/support/ticket', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description }),
+    });
+    return res.json();
+  } catch { return null; }
+}
+
 export async function copilotHealth(): Promise<string | null> {
   try {
     const token = await getAuthToken();
