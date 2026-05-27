@@ -208,16 +208,12 @@ class SPAStaticFiles(StaticFiles):
 
 # ── Serve web frontend ──────────────────────────────────
 _DIST = Path(__file__).resolve().parent.parent / "web-app" / "dist"
-_LEGACY = Path(__file__).resolve().parent.parent / "web"
 
 if _DIST.exists():
     app.mount("/", SPAStaticFiles(directory=str(_DIST), html=True), name="web")
     logger.info("Serving SPA from %s", _DIST)
-elif _LEGACY.exists():
-    app.mount("/", StaticFiles(directory=str(_LEGACY), html=True), name="web")
-    logger.info("Serving legacy web from %s", _LEGACY)
 else:
-    logger.warning("No frontend directory found (%s or %s)", _DIST, _LEGACY)
+    logger.warning("No frontend dist found at %s — run 'npm run build' in web-app/", _DIST)
 
 
 # ── MT5 Init ─────────────────────────────────────────────
