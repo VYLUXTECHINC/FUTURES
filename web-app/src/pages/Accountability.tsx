@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchTrades } from '../services/api';
 import type { Trade } from '../types';
 import type { NavigateFn } from '../App';
@@ -13,6 +13,14 @@ const FILTERS: { label: string; value: DateFilter }[] = [
   { label: '90d', value: 90 },
   { label: 'All', value: 0 },
 ];
+
+const JPY_PAIRS = new Set(['USDJPY', 'GBPJPY', 'EURJPY', 'AUDJPY', 'CHFJPY', 'CADJPY', 'NZDJPY']);
+
+function formatPrice(pair: string | undefined, price: number | undefined | null): string {
+  if (price == null) return '-';
+  const decimals = pair && JPY_PAIRS.has(pair.toUpperCase()) ? 3 : 5;
+  return `$${price.toFixed(decimals)}`;
+}
 
 function formatTime(dateStr?: string): string {
   if (!dateStr) return '-';
@@ -63,7 +71,18 @@ export default function Accountability(_props: Props) {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  const filtered = filterTrades(trades, filter);
+  const refresh = useCallback(() => {
+    setLoading(true);
+    fetchTrades(200).then((d) => { setTrades(d?.trades ?? []); setLoading(false); });
+  }, []);
+
+  const filtered = useMemo(() => filterTrades(trades, filter), [trades, filter]);
+
+  const closed = filtered.filter((t) => t.status === 'CLOSED' && t.pnl != null);
+  const wins = closed.filter((t) => (t.pnl ?? 0) >= 0);
+  const losses = closed.filter((t) => (t.pnl ?? 0) < 0);
+  const totalPnl = closed.reduce((sum, t) => sum + (t.pnl ?? 0), 0);
+  const winRate = closed.length > 0 ? ((wins.length / closed.length) * 100).toFixed(0) : '-';
 
   return (
     <div className="page page-trades">
@@ -73,7 +92,7 @@ export default function Accountability(_props: Props) {
       <div className="trades-header">
         <h2 style={{ fontSize: '1rem', fontWeight: 600 }}>📋 Trade History</h2>
         <div className="trades-actions">
-          <button className="btn-icon" onClick={() => { setLoading(true); fetchTrades(200).then((d) => { setTrades(d?.trades ?? []); setLoading(false); }); }} title="Refresh">
+          <button className="btn-icon" onClick={refresh} title="Refresh">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="23 4 23 10 17 10"></polyline>
               <polyline points="1 20 1 14 7 14"></polyline>
@@ -100,6 +119,34 @@ export default function Accountability(_props: Props) {
         ))}
       </div>
 
+      {/* Summary */}
+      {!loading && filtered.length > 0 && (
+        <div className="trades-summary">
+          <div className="summary-item">
+            <span className="summary-label">P&amp;L</span>
+            <span className={`summary-value ${totalPnl >= 0 ? 'pnl-profit' : 'pnl-loss'}`}>
+              {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
+            </span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Win Rate</span>
+            <span className="summary-value">{winRate}{winRate !== '-' ? '%' : ''}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Wins</span>
+            <span className="summary-value pnl-profit">{wins.length}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Losses</span>
+            <span className="summary-value pnl-loss">{losses.length}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Total</span>
+            <span className="summary-value">{filtered.length}</span>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       {loading ? (
         <div className="card" style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
@@ -115,30 +162,35 @@ export default function Accountability(_props: Props) {
           <table className="trades-table">
             <thead>
               <tr>
-                <th>Ticket</th>
+                <th className="col-ticket">Ticket</th>
                 <th>Pair</th>
                 <th>Type</th>
                 <th className="col-lots">Lots</th>
                 <th className="col-entry">Entry</th>
                 <th className="col-exit">Exit</th>
+                <th className="col-sl">SL</th>
+                <th className="col-tp">TP</th>
                 <th>P&amp;L</th>
-                <th>Status</th>
+                <th className="col-status">St</th>
                 <th className="col-time">Time</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((t, i) => {
                 const pnl = Number(t.pnl ?? 0);
+                const isOpen = t.status !== 'CLOSED';
                 return (
-                  <tr key={t.ticket ?? i}>
-                    <td className="td-ticket">{t.ticket ?? '-'}</td>
+                  <tr key={t.ticket ?? i} className={isOpen ? 'row-open' : ''}>
+                    <td className="col-ticket td-ticket">{t.ticket ?? '-'}</td>
                     <td><span className="pair-badge">{t.pair ?? '-'}</span></td>
                     <td><span className={`trade-type ${t.direction === 'sell' ? 'sell' : 'buy'}`}>{(t.direction ?? '').toUpperCase()}</span></td>
                     <td className="col-lots">{t.lots ?? '-'}</td>
-                    <td className="col-entry">{t.entry_price != null ? `$${t.entry_price.toFixed(5)}` : '-'}</td>
-                    <td className="col-exit">{t.close_price != null ? `$${t.close_price.toFixed(5)}` : '-'}</td>
+                    <td className="col-entry">{formatPrice(t.pair, t.entry_price)}</td>
+                    <td className="col-exit">{isOpen ? <span className="live-dot" title="Open position" /> : formatPrice(t.pair, t.close_price)}</td>
+                    <td className="col-sl">{formatPrice(t.pair, t.sl_price)}</td>
+                    <td className="col-tp">{formatPrice(t.pair, t.tp_price)}</td>
                     <td className={pnl >= 0 ? 'pnl-profit' : 'pnl-loss'}>{pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</td>
-                    <td><span className={`status-badge ${t.status === 'CLOSED' ? 'closed' : 'open'}`}>{t.status ?? 'OPEN'}</span></td>
+                    <td className="col-status"><span className={`status-badge ${isOpen ? 'open' : 'closed'}`}>{isOpen ? 'OPN' : 'CLS'}</span></td>
                     <td className="col-time">{formatTime(t.closed_at || t.opened_at)}</td>
                   </tr>
                 );
@@ -148,7 +200,7 @@ export default function Accountability(_props: Props) {
         </div>
       )}
 
-      <p className="trades-footer">{filtered.length} trade{filtered.length !== 1 ? 's' : ''}</p>
+      <p className="trades-footer">{filtered.length} trade{filtered.length !== 1 ? 's' : ''}{!loading && ` · ${closed.length} closed`}</p>
     </div>
   );
 }
