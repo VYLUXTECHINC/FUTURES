@@ -12,10 +12,11 @@ import Settings from './pages/Settings';
 import Support from './pages/Support';
 import Notifications from './pages/Notifications';
 import Legal from './pages/Legal';
+import Verification from './pages/Verification';
 import Mt5 from './pages/Mt5';
 
 export type Page =
-  | 'splash' | 'login' | 'signup' | 'forgot-password'
+  | 'splash' | 'login' | 'signup' | 'forgot-password' | 'verification'
   | 'dashboard' | 'copilot' | 'accountability' | 'settings'
   | 'support' | 'notifications' | 'legal' | 'mt5';
 
@@ -48,6 +49,7 @@ export default function App() {
       case 'login': return <Login navigate={navigate} />;
       case 'signup': return <Signup navigate={navigate} />;
       case 'forgot-password': return <ForgotPassword navigate={navigate} />;
+      case 'verification': return <Verification navigate={navigate} email={navOpts?.email || ''} />;
       case 'dashboard': return <Dashboard navigate={navigate} />;
       case 'copilot': return <Copilot navigate={navigate} />;
       case 'accountability': return <Accountability navigate={navigate} />;

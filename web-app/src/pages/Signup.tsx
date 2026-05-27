@@ -49,7 +49,7 @@ export default function Signup({ navigate }: Props) {
       }
       setSuccess('Account created! Check your email for confirmation.');
       setLoading(false);
-      setTimeout(() => navigate('splash'), 2000);
+      setTimeout(() => navigate('verification', { email }), 1500);
     } catch {
       setError('Signup failed. Try again.'); setLoading(false);
     }
