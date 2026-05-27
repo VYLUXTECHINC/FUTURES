@@ -10,7 +10,6 @@ import Copilot from './pages/Copilot';
 import Accountability from './pages/Accountability';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
-import Notifications from './pages/Notifications';
 import Legal from './pages/Legal';
 import Verification from './pages/Verification';
 import Mt5 from './pages/Mt5';
@@ -18,7 +17,7 @@ import Mt5 from './pages/Mt5';
 export type Page =
   | 'splash' | 'login' | 'signup' | 'forgot-password' | 'verification'
   | 'dashboard' | 'copilot' | 'accountability' | 'settings'
-  | 'support' | 'notifications' | 'legal' | 'mt5';
+  | 'support' | 'legal' | 'mt5';
 
 export type NavigateFn = (page: Page, opts?: Record<string, string>) => void;
 
@@ -39,7 +38,7 @@ export default function App() {
 
   const appPages: Page[] = [
     'dashboard', 'copilot', 'accountability', 'settings',
-    'support', 'notifications', 'mt5',
+    'support', 'mt5',
   ];
   const needsLayout = appPages.includes(page);
 
@@ -55,7 +54,6 @@ export default function App() {
       case 'accountability': return <Accountability navigate={navigate} />;
       case 'settings': return <Settings navigate={navigate} />;
       case 'support': return <Support navigate={navigate} />;
-      case 'notifications': return <Notifications navigate={navigate} />;
       case 'legal': return <Legal navigate={navigate} tab={(navOpts?.tab as 'terms' | 'risk') || 'terms'} />;
       case 'mt5': return <Mt5 navigate={navigate} />;
     }
