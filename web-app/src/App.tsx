@@ -38,7 +38,7 @@ export default function App() {
 
   const appPages: Page[] = [
     'dashboard', 'copilot', 'accountability', 'settings',
-    'support', 'notifications', 'legal', 'mt5',
+    'support', 'notifications', 'mt5',
   ];
   const needsLayout = appPages.includes(page);
 
