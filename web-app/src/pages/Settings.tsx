@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { loadSettings, saveSettings, getSupabase } from '../services/api';
+import { loadSettings, saveSettings, getSupabase, getAuthToken } from '../services/api';
 import type { NavigateFn } from '../App';
 
 interface Props { navigate: NavigateFn; }
@@ -73,7 +73,6 @@ export default function Settings({ navigate }: Props) {
 
   async function handleExport() {
     try {
-      const { getAuthToken } = await import('../services/api');
       const token = await getAuthToken();
       if (!token) { showToast('Not authenticated', 'error'); return; }
       const res = await fetch('/api/trades/export?format=csv', {
