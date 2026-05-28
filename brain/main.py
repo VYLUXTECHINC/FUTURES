@@ -81,6 +81,33 @@ def init_mt5(
         ok = reconnect_mt5(login, password, server, max_retries=5)
     else:
         _login, _password, _server = get_mt5_creds()
+        # Check for pending account switch (set by /api/mt5/switch)
+        pending_login = _bot_state.get("pending_mt5_login")
+        pending_server = _bot_state.get("pending_mt5_server")
+        if pending_login and pending_server:
+            _login = pending_login
+            _server = pending_server
+            try:
+                from brain.db.supabase import _get_conn
+                from brain.utils.crypto import decrypt_password
+                conn = _get_conn(SUPABASE_DB_URI)
+                with conn, conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT password FROM mt5_credentials WHERE login = %s AND server = %s ORDER BY updated_at DESC LIMIT 1",
+                        (_login, _server),
+                    )
+                    row = cur.fetchone()
+                conn.close()
+                if row:
+                    try:
+                        _password = decrypt_password(row[0])
+                    except Exception:
+                        _password = row[0]
+            except Exception as exc:
+                logger.warning("Failed to fetch pending account password: %s", exc)
+            _bot_state.pop("pending_mt5_login", None)
+            _bot_state.pop("pending_mt5_server", None)
+            logger.info("Switched MT5 account: login=%s | server=%s", _login, _server)
         if not _login:
             logger.error("No MT5 credentials available (env or Supabase)")
             return False

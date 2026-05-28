@@ -568,6 +568,18 @@ async def switch_mt5_account(req: SwitchAccountRequest, user: dict = Depends(req
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+# ── Telegram helper (keeps bot token out of handler body) ─
+def _send_telegram(bot_token: str, text: str, *admin_ids: str | None) -> None:
+    """Send a message via Telegram Bot API. Token is never logged or exposed."""
+    import requests
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    for aid in filter(None, admin_ids):
+        try:
+            requests.post(url, json={"chat_id": int(aid), "text": text}, timeout=10)
+        except Exception as exc:
+            logger.warning("Telegram notification failed for admin %s: %s", aid, exc)
+
+
 # ── Support Ticket ────────────────────────────────────────
 
 class SupportTicketRequest(BaseModel):
@@ -651,13 +663,7 @@ async def create_support_ticket(req: SupportTicketRequest, request: Request, use
             f"Title: {req.title}\n"
             f"Description: {req.description}"
         )
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        for admin_id in filter(None, [admin_id_1, admin_id_2]):
-            try:
-                import requests
-                requests.post(url, json={"chat_id": int(admin_id), "text": text}, timeout=10)
-            except Exception as exc:
-                logger.warning("Telegram notification failed for admin %s: %s", admin_id, exc)
+        _send_telegram(bot_token, text, admin_id_1, admin_id_2)
 
     logger.info("Support ticket created | id=%s | user=%s", ticket_id, email)
     return {"status": "ok", "ticket_id": ticket_id}

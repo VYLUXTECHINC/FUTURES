@@ -50,6 +50,7 @@ _sent_issue_ids: set[int] = set()
 _cooldown_notified: set[str] = set()
 _last_daily_report: str | None = None
 _stop_event = asyncio.Event()
+_bot_state_ref: dict = {}
 
 # ── Helpers ────────────────────────────────────────────────
 
@@ -272,7 +273,12 @@ async def cmd_restart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         return
 
     await _send(update, "🔄 Restarting trading engine...")
-    os._exit(42)
+    _bot_state_ref["running"] = False
+    _bot_state_ref["restart_requested"] = True
+    restart_fn = _bot_state_ref.get("_restart_fn")
+    if restart_fn:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, restart_fn)
 
 
 # ── Stats ──────────────────────────────────────────────────
@@ -476,6 +482,9 @@ class TelegramAdminBot:
             raise RuntimeError("TELEGRAM_ADMIN_BOT_TOKEN not set")
 
         self.bot_state = bot_state_ref or {}
+        if bot_state_ref is not None:
+            global _bot_state_ref
+            _bot_state_ref = bot_state_ref
         self._app: Application | None = None
         self._tasks: list[asyncio.Task] = []
         self._running = False

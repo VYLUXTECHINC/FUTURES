@@ -35,31 +35,19 @@ def _get_jwt_secret() -> str:
     return ""
 
 
-def _decode_base64(token: str) -> dict:
-    """Unverified base64 decode of JWT payload — used as fallback when
-    SUPABASE_JWT_SECRET is missing or wrong."""
-    try:
-        import base64
-        import json
-        payload_b64 = token.split(".")[1]
-        padded = payload_b64 + "=" * (4 - len(payload_b64) % 4)
-        return json.loads(base64.urlsafe_b64decode(padded))
-    except Exception:
-        return {}
-
-
 def decode_jwt_payload(token: str) -> dict:
     if not token or "." not in token:
         return {}
     secret = _get_jwt_secret()
     if not secret:
-        return _decode_base64(token)
+        logger.warning("SUPABASE_JWT_SECRET not set — rejecting JWT")
+        return {}
     try:
         payload = jwt.decode(token, secret, algorithms=["HS256"], audience="authenticated")
         return payload
     except (JWTError, JWKError) as exc:
-        logger.warning("JWT decode failed with secret, falling back to unverified: %s", exc)
-        return _decode_base64(token)
+        logger.warning("JWT decode failed: %s", exc)
+        return {}
 
 
 async def get_current_user(
