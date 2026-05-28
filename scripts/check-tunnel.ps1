@@ -1,0 +1,1 @@
+C:\nssm\nssm.exe status CloudflaredTunnel
