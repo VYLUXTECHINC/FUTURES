@@ -7,7 +7,7 @@ from functools import lru_cache
 import httpx
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import jwt, JWTError
+from jose import jwk, jwt, JWTError
 from jose.exceptions import JWKError
 
 logger = logging.getLogger(__name__)
@@ -59,12 +59,25 @@ def decode_jwt_payload(token: str) -> dict:
     secret = _get_jwt_secret()
     if not secret:
         return _decode_unverified(token)
+    # Try HS256 with the legacy secret first
     try:
         payload = jwt.decode(token, secret, algorithms=["HS256"], audience="authenticated")
         return payload
     except (JWTError, JWKError) as exc:
-        logger.warning("JWT decode failed with secret: %s", exc)
-        return _decode_unverified(token)
+        logger.debug("HS256 decode failed: %s — trying JWKS...", exc)
+    # Fallback: fetch JWKS from Supabase (supports ES256 + new signing keys)
+    try:
+        jwks_url = f"{SUPABASE_URL}/.well-known/jwks.json"
+        jwks = httpx.get(jwks_url, timeout=5).json()
+        header = jwt.get_unverified_header(token)
+        for key in jwks.get("keys", []):
+            if key.get("kid") == header.get("kid"):
+                public_key = jwk.construct(key)
+                payload = jwt.decode(token, public_key, algorithms=[header.get("alg")], audience="authenticated")
+                return payload
+    except Exception as exc:
+        logger.warning("JWKS verification failed: %s", exc)
+    return _decode_unverified(token)
 
 
 async def get_current_user(
