@@ -857,9 +857,11 @@ details.card ol li strong { color: var(--text); }
 .page-chat {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% + 2rem);
+  width: calc(100% + 2rem);
   padding: 0;
   margin: -1rem;
+  min-height: 0;
 }
 .page-chat .chat-area {
   flex: 1;

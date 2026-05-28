@@ -24,6 +24,7 @@ from brain.db.postgres import (
     get_todays_pnl,
     count_trades_today,
 )
+from brain.db.supabase import get_state, set_state
 
 from backend.ai.market_summary import MarketSummaryEngine
 from backend.ai.chart_generator import ChartGenerator
@@ -83,11 +84,17 @@ class CopilotEngine:
                 f"{rejection}\n"
             )
 
-        return f"""You are FUTURES, an AI trading assistant. You are calm, risk-aware, and brief (1-2 sentences). You NEVER promise returns or encourage excessive risk. You NEVER give financial advice — only analysis. Introduce yourself as 'FUTURES'. If asked non-trading questions, politely refuse. Use the user's name if known.
+        memories = self._load_memories(user_id)
+        memory_text = ""
+        if memories:
+            items = [f"- {k}: {v}" for k, v in memories.items()]
+            memory_text = "REMEMBERED ABOUT YOU:\n" + "\n".join(items) + "\n\n"
+
+        return f"""You are FUTURES — a trading bot built on the knowledge of Richie Rich and developed by VYLUX TECH. You are calm, risk-aware, and brief (1-2 sentences). You NEVER promise returns or encourage excessive risk. You NEVER give financial advice — only analysis. If asked non-trading questions, politely refuse. Use the user's name if known.
 
 DATE: {now} UTC
 
-CURRENT MARKET CONDITIONS:
+{memory_text}CURRENT MARKET CONDITIONS:
 {market_text or "Market data not yet available."}
 
 RESPOND naturally and conversationally. Do NOT output JSON or code."""
@@ -362,11 +369,17 @@ RESPOND naturally and conversationally. Do NOT output JSON or code."""
         system_prompt = self._build_system_prompt(user_id)
 
         async with self._conv_lock:
+            if user_id not in self._conversations or not self._conversations[user_id]:
+                saved = get_state(f"conversation:{user_id}", default=[])
+                self._conversations[user_id] = saved if isinstance(saved, list) else []
+
             conv = self._conversations[user_id]
             conv.append({"role": "user", "content": user_message})
             if len(conv) > 50:
                 conv = conv[-50:]
                 self._conversations[user_id] = conv
+
+        self._extract_and_save_memories(user_message, user_id)
 
         if not AI_BASE_URL:
             return {"reply": "Copilot not configured."}
@@ -380,6 +393,7 @@ RESPOND naturally and conversationally. Do NOT output JSON or code."""
 
         async with self._conv_lock:
             self._conversations[user_id].append({"role": "assistant", "content": reply})
+            set_state(f"conversation:{user_id}", self._conversations[user_id])
 
         return {"reply": reply}
 
@@ -419,5 +433,29 @@ RESPOND naturally and conversationally. Do NOT output JSON or code."""
             logger.error("LLM network error: %s", exc)
             return "Network issue. Please check your connection."
 
+    def _load_memories(self, user_id: str) -> dict:
+        key = f"ai_memories:{user_id}"
+        mem = get_state(key)
+        return mem if isinstance(mem, dict) else {}
+
+    def _save_memory(self, user_id: str, key: str, value: str) -> None:
+        memories = self._load_memories(user_id)
+        memories[key] = value
+        set_state(f"ai_memories:{user_id}", memories)
+
+    async def _extract_and_save_memories(self, user_message: str, user_id: str) -> None:
+        lower = user_message.lower()
+        for pattern, mem_key in [
+            ("my name is", "name"),
+            ("i'm ", "name"),
+            ("call me ", "name"),
+        ]:
+            if pattern in lower:
+                idx = lower.index(pattern) + len(pattern)
+                val = user_message[idx:].strip().rstrip(".!,?").split()[0].strip("'")
+                if val:
+                    self._save_memory(user_id, mem_key, val)
+
     def clear_conversation(self, user_id: str) -> None:
         self._conversations[user_id] = []
+        set_state(f"conversation:{user_id}", [])
