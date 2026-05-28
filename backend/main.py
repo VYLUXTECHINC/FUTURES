@@ -157,7 +157,6 @@ app.include_router(settings_router)
 
 set_bot_state_ref(_bot_state)
 set_settings_state_ref(_bot_state)
-_bot_state["_restart_fn"] = _restart_engine
 
 # ── SPA static file handler (client-side routing fallback) ──
 class SPAStaticFiles(StaticFiles):
@@ -195,6 +194,9 @@ def _restart_engine():
     _trading_thread = threading.Thread(target=trading_loop, name="trading_loop", daemon=False)
     _trading_thread.start()
     logger.info("Trading engine restarted")
+
+
+_bot_state["_restart_fn"] = _restart_engine
 
 
 # ── Entry Point ─────────────────────────────────────────
